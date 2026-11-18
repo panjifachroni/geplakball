@@ -1,0 +1,54 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/paper_player.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://aset/paper-player.png" id="2_texture"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
+size = Vector2(96, 96)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_slap"]
+radius = 12.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+radius = 28.0
+
+[node name="PaperPlayer" type="Area2D"]
+input_pickable = true
+collision_mask = 0
+script = ExtResource("1_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(0, -48)
+scale = Vector2(3, 3)
+texture = ExtResource("2_texture")
+region_enabled = true
+region_rect = Rect2(0, 0, 32, 32)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -48)
+shape = SubResource("RectangleShape2D_player")
+
+[node name="SlapTimer" type="Timer" parent="."]
+wait_time = 0.18
+one_shot = true
+
+[node name="SlapHitbox" type="Area2D" parent="."]
+position = Vector2(42, -6)
+collision_layer = 0
+collision_mask = 2
+input_pickable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SlapHitbox"]
+shape = SubResource("CircleShape2D_slap")
+
+[node name="Body" type="StaticBody2D" parent="."]
+position = Vector2(0, -32)
+collision_layer = 4
+collision_mask = 6
+input_pickable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Body"]
+shape = SubResource("CircleShape2D_body")
+
+[connection signal="timeout" from="SlapTimer" to="." method="_on_slap_timer_timeout"]
+[connection signal="body_entered" from="SlapHitbox" to="." method="_on_slap_hitbox_body_entered"]

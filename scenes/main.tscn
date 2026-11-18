@@ -1,0 +1,125 @@
+[gd_scene format=3 uid="uid://di8cxjy0lnjby"]
+
+[ext_resource type="Texture2D" uid="uid://0fqsw4oydm38" path="res://aset/field.png" id="1_field"]
+[ext_resource type="PackedScene" path="res://scenes/paper_player.tscn" id="2_player"]
+[ext_resource type="Texture2D" uid="uid://c7q8p7htlmemp" path="res://aset/paper-player2.png" id="3_blue"]
+[ext_resource type="PackedScene" path="res://scenes/ball.tscn" id="4_ball"]
+[ext_resource type="Script" uid="uid://dd7snnl0iee0n" path="res://scripts/match.gd" id="5_match"]
+[ext_resource type="Script" path="res://scripts/aim_overlay.gd" id="6_aim"]
+[ext_resource type="PackedScene" path="res://scenes/goal.tscn" id="7_goal"]
+
+[node name="GeplakBall" type="Node2D" unique_id=1941351203]
+texture_filter = 1
+script = ExtResource("5_match")
+
+[node name="Field" type="Sprite2D" parent="." unique_id=1594956528]
+texture = ExtResource("1_field")
+centered = false
+
+[node name="LeftGoal" parent="." unique_id=972910901 instance=ExtResource("7_goal")]
+position = Vector2(165, 560)
+
+[node name="RightGoal" parent="." unique_id=1139809890 instance=ExtResource("7_goal")]
+position = Vector2(1435, 560)
+scale = Vector2(-1, 1)
+
+[node name="Players" type="Node2D" parent="." unique_id=524545806]
+y_sort_enabled = true
+
+[node name="RedGoalkeeper" parent="Players" unique_id=1413081385 instance=ExtResource("2_player")]
+position = Vector2(224, 601)
+is_goalkeeper = true
+
+[node name="RedPlayer1" parent="Players" unique_id=1806295020 instance=ExtResource("2_player")]
+position = Vector2(422, 471)
+
+[node name="RedPlayer2" parent="Players" unique_id=535397539 instance=ExtResource("2_player")]
+position = Vector2(414, 686)
+
+[node name="RedPlayer3" parent="Players" unique_id=949280665 instance=ExtResource("2_player")]
+position = Vector2(1136, 281)
+
+[node name="RedPlayer4" parent="Players" unique_id=1300792528 instance=ExtResource("2_player")]
+position = Vector2(742, 590)
+
+[node name="RedPlayer5" parent="Players" unique_id=1618855688 instance=ExtResource("2_player")]
+position = Vector2(1059, 918)
+
+[node name="BlueGoalkeeper" parent="Players" unique_id=328469915 instance=ExtResource("2_player")]
+position = Vector2(1359, 598)
+idle_region = Rect2(56, 0, 40, 32)
+slap_region = Rect2(0, 0, 56, 32)
+team = 1
+is_goalkeeper = true
+team_texture = ExtResource("3_blue")
+
+[node name="BluePlayer1" parent="Players" unique_id=1240067013 instance=ExtResource("2_player")]
+position = Vector2(1196, 446)
+idle_region = Rect2(56, 0, 40, 32)
+slap_region = Rect2(0, 0, 56, 32)
+team = 1
+team_texture = ExtResource("3_blue")
+
+[node name="BluePlayer2" parent="Players" unique_id=1588395565 instance=ExtResource("2_player")]
+position = Vector2(1193, 728)
+idle_region = Rect2(56, 0, 40, 32)
+slap_region = Rect2(0, 0, 56, 32)
+team = 1
+team_texture = ExtResource("3_blue")
+
+[node name="BluePlayer3" parent="Players" unique_id=1132385825 instance=ExtResource("2_player")]
+position = Vector2(501, 288)
+idle_region = Rect2(56, 0, 40, 32)
+slap_region = Rect2(0, 0, 56, 32)
+team = 1
+team_texture = ExtResource("3_blue")
+
+[node name="BluePlayer4" parent="Players" unique_id=1707656083 instance=ExtResource("2_player")]
+position = Vector2(1011, 587)
+idle_region = Rect2(56, 0, 40, 32)
+slap_region = Rect2(0, 0, 56, 32)
+team = 1
+team_texture = ExtResource("3_blue")
+
+[node name="BluePlayer5" parent="Players" unique_id=827232182 instance=ExtResource("2_player")]
+position = Vector2(499, 894)
+idle_region = Rect2(56, 0, 40, 32)
+slap_region = Rect2(0, 0, 56, 32)
+team = 1
+team_texture = ExtResource("3_blue")
+
+[node name="Ball" parent="." unique_id=1177398261 instance=ExtResource("4_ball")]
+z_index = 1
+position = Vector2(800, 560)
+
+[node name="AimOverlay" type="Node2D" parent="." unique_id=246049512]
+z_index = 2
+script = ExtResource("6_aim")
+
+[node name="HUD" type="CanvasLayer" parent="." unique_id=218331897]
+
+[node name="Status" type="Label" parent="HUD" unique_id=709920062]
+offset_left = 70.0
+offset_top = 35.0
+offset_right = 1530.0
+offset_bottom = 80.0
+theme_override_font_sizes/font_size = 25
+text = "Bola di kaki: klik pemain, tarik ke belakang, lalu lepas | R: ulang"
+horizontal_alignment = 1
+
+[node name="Power" type="ProgressBar" parent="HUD" unique_id=716309780]
+offset_left = 550.0
+offset_top = 1045.0
+offset_right = 1050.0
+offset_bottom = 1070.0
+mouse_filter = 2
+show_percentage = false
+
+[node name="Score" type="Label" parent="HUD" unique_id=378370543]
+offset_left = 400.0
+offset_top = 980.0
+offset_right = 1200.0
+offset_bottom = 1025.0
+theme_override_font_sizes/font_size = 28
+text = "MERAH  0  :  0  BIRU"
+horizontal_alignment = 1
