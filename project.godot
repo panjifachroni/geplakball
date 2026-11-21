@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="geplakball"
-run/main_scene="res://scenes/main.tscn"
+run/main_scene="uid://xionwmcn6vbx"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://aset/icon.svg"
 
@@ -22,7 +22,6 @@ window/size/viewport_height=1120
 window/size/window_width_override=1000
 window/size/window_height_override=700
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
 
 [physics]
 
