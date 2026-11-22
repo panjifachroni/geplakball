@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ddidwjv6bsdnt"
-path="res://.godot/imported/Logo GeplakBall  ver2.png-85dd38f6b29237a338502a995dde9271.ctex"
+uid="uid://boiblhtypn8gr"
+path="res://.godot/imported/BackHome Button HoverPressed.png-874d0bb0cf2064981a9ddab850849e84.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://aset/Logo GeplakBall  ver2.png"
-dest_files=["res://.godot/imported/Logo GeplakBall  ver2.png-85dd38f6b29237a338502a995dde9271.ctex"]
+source_file="res://aset/BackHome Button HoverPressed.png"
+dest_files=["res://.godot/imported/BackHome Button HoverPressed.png-874d0bb0cf2064981a9ddab850849e84.ctex"]
 
 [params]
 

@@ -133,12 +133,16 @@ func _physics_process(delta: float) -> void:
 	$HUD/Power.value = aim_power() * 100.0 if aiming_player != null else 0.0
 	if not pending_restart.is_empty():
 		$HUD/Status.text = "%s — Tim %s | Menunggu bola berhenti..." % [pending_restart.kind, team_name(pending_restart.team)]
+		$HUD/Status2.text = "%s — Tim %s | Menunggu bola berhenti..." % [pending_restart.kind, team_name(pending_restart.team)]
 	elif aiming_player != null:
 		$HUD/Status.text = "Kekuatan %d%% | Lepas untuk menembak | Klik kanan: batal" % int(aim_power() * 100.0)
+		$HUD/Status2.text = "Kekuatan %d%% | Lepas untuk menembak | Klik kanan: batal" % int(aim_power() * 100.0)
 	elif restart_taker != null:
 		$HUD/Status.text = "%s — Tim %s | Bidik ke dalam lapangan" % [restart_kind, team_name(restart_team)]
+		$HUD/Status2.text = "%s — Tim %s | Bidik ke dalam lapangan" % [restart_kind, team_name(restart_team)]
 	elif not ball.is_stopped():
 		$HUD/Status.text = "Bola bergerak | R: ulang pertandingan"
+		$HUD/Status2.text = "Bola bergerak | R: ulang pertandingan"
 	else:
 		$HUD/Status.text = "Bola di kaki: klik pemain, tarik ke belakang, lalu lepas | R: ulang"
 	$HUD/Score.text = "MERAH  %d  :  %d  BIRU" % score

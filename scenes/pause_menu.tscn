@@ -1,0 +1,70 @@
+[gd_scene format=3 uid="uid://brde8ysjo5530"]
+
+[ext_resource type="Script" uid="uid://co2uvlydbkeri" path="res://scripts/pause_menu.gd" id="1_n87rw"]
+[ext_resource type="Texture2D" uid="uid://c1csgy0vx0p10" path="res://aset/Resume Button Normal.png" id="2_kukqi"]
+[ext_resource type="Texture2D" uid="uid://hg46u0byl1ba" path="res://aset/Resume Button HoverPressed.png" id="3_5d2l8"]
+[ext_resource type="Texture2D" uid="uid://cbh6jaxs6p2m" path="res://aset/BackHome Button Normal.png" id="4_7l7mv"]
+[ext_resource type="Texture2D" uid="uid://boiblhtypn8gr" path="res://aset/BackHome Button HoverPressed.png" id="5_v4r4p"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_n87rw"]
+texture = ExtResource("2_kukqi")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_myx47"]
+texture = ExtResource("3_5d2l8")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_kukqi"]
+texture = ExtResource("3_5d2l8")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_5d2l8"]
+texture = ExtResource("4_7l7mv")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_7l7mv"]
+texture = ExtResource("5_v4r4p")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_v4r4p"]
+texture = ExtResource("5_v4r4p")
+
+[node name="PauseMenu" type="CanvasLayer" unique_id=455983114]
+process_mode = 3
+script = ExtResource("1_n87rw")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1289165425]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.60784316)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=789201945]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -328.0
+offset_top = -201.0
+offset_right = 328.0
+offset_bottom = 201.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 60
+
+[node name="Button" type="Button" parent="VBoxContainer" unique_id=159113511]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 55
+theme_override_styles/normal = SubResource("StyleBoxTexture_n87rw")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_myx47")
+theme_override_styles/hover = SubResource("StyleBoxTexture_kukqi")
+
+[node name="Button2" type="Button" parent="VBoxContainer" unique_id=598746664]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 55
+theme_override_styles/normal = SubResource("StyleBoxTexture_5d2l8")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_7l7mv")
+theme_override_styles/hover = SubResource("StyleBoxTexture_v4r4p")
+
+[connection signal="pressed" from="VBoxContainer/Button" to="." method="_on_resume_pressed"]
+[connection signal="pressed" from="VBoxContainer/Button2" to="." method="_on_mainMenu_pressed"]

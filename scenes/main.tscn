@@ -5,8 +5,10 @@
 [ext_resource type="Texture2D" uid="uid://c7q8p7htlmemp" path="res://aset/paper-player2.png" id="3_blue"]
 [ext_resource type="PackedScene" path="res://scenes/ball.tscn" id="4_ball"]
 [ext_resource type="Script" uid="uid://dd7snnl0iee0n" path="res://scripts/match.gd" id="5_match"]
-[ext_resource type="Script" path="res://scripts/aim_overlay.gd" id="6_aim"]
+[ext_resource type="Script" uid="uid://di8qbxy74y71m" path="res://scripts/aim_overlay.gd" id="6_aim"]
 [ext_resource type="PackedScene" path="res://scenes/goal.tscn" id="7_goal"]
+[ext_resource type="FontFile" uid="uid://5ixf84ibkqxs" path="res://aset/boldpixels.ttf" id="8_tipki"]
+[ext_resource type="PackedScene" uid="uid://brde8ysjo5530" path="res://scenes/pause_menu.tscn" id="9_85g3d"]
 
 [node name="GeplakBall" type="Node2D" unique_id=1941351203]
 texture_filter = 1
@@ -99,11 +101,25 @@ script = ExtResource("6_aim")
 [node name="HUD" type="CanvasLayer" parent="." unique_id=218331897]
 
 [node name="Status" type="Label" parent="HUD" unique_id=709920062]
+modulate = Color(0.9490196, 0.9607843, 0.9843137, 1)
 offset_left = 70.0
-offset_top = 35.0
+offset_top = 54.0
 offset_right = 1530.0
-offset_bottom = 80.0
-theme_override_font_sizes/font_size = 25
+offset_bottom = 99.0
+theme_override_fonts/font = ExtResource("8_tipki")
+theme_override_font_sizes/font_size = 45
+text = "Bola di kaki: klik pemain, tarik ke belakang, lalu lepas | R: ulang"
+horizontal_alignment = 1
+
+[node name="Status2" type="Label" parent="HUD" unique_id=1400047654]
+modulate = Color(0.1254902, 0.1254902, 0.15294118, 1)
+z_index = -1
+offset_left = 70.0
+offset_top = 59.0
+offset_right = 1530.0
+offset_bottom = 115.0
+theme_override_fonts/font = ExtResource("8_tipki")
+theme_override_font_sizes/font_size = 45
 text = "Bola di kaki: klik pemain, tarik ke belakang, lalu lepas | R: ulang"
 horizontal_alignment = 1
 
@@ -123,3 +139,6 @@ offset_bottom = 1025.0
 theme_override_font_sizes/font_size = 28
 text = "MERAH  0  :  0  BIRU"
 horizontal_alignment = 1
+
+[node name="PauseMenu" parent="." unique_id=455983114 instance=ExtResource("9_85g3d")]
+visible = false

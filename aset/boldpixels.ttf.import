@@ -2,13 +2,13 @@
 
 importer="font_data_dynamic"
 type="FontFile"
-uid="uid://bivyocugo6ox5"
-path="res://.godot/imported/GrapeSoda.ttf-e3551fbb4c26cf300b9ccd71f2a02270.fontdata"
+uid="uid://5ixf84ibkqxs"
+path="res://.godot/imported/boldpixels.ttf-6f819c410f6ca8d3aa54bae0cf4be567.fontdata"
 
 [deps]
 
-source_file="res://aset/GrapeSoda.ttf"
-dest_files=["res://.godot/imported/GrapeSoda.ttf-e3551fbb4c26cf300b9ccd71f2a02270.fontdata"]
+source_file="res://aset/boldpixels.ttf"
+dest_files=["res://.godot/imported/boldpixels.ttf-6f819c410f6ca8d3aa54bae0cf4be567.fontdata"]
 
 [params]
 
