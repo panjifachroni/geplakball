@@ -2,12 +2,15 @@ extends CharacterBody2D
 ## Top-down ball: no gravity, with friction and rebounds against paper players.
 
 signal segment_travelled(from: Vector2, to: Vector2)
+signal kicked
+signal goal_post_hit
 
 @export var friction: float = 560.0
 @export var bounce: float = 0.75
 @export var max_speed: float = 1600.0
 
 var last_touch: Node2D
+var last_kicker: Node2D
 var _start_position: Vector2
 var restart_owner: Node2D
 var frozen := false
@@ -27,6 +30,8 @@ func receive_slap(origin: Vector2, strength: float, player: Node2D, aimed_direct
 		return
 	if restart_owner != null and player != restart_owner:
 		return
+	if player == last_kicker:
+		return
 	restart_owner = null
 	frozen = false
 	var direction := aimed_direction if not aimed_direction.is_zero_approx() else global_position - origin
@@ -34,8 +39,10 @@ func receive_slap(origin: Vector2, strength: float, player: Node2D, aimed_direct
 		direction = Vector2.RIGHT
 	velocity = (velocity * 0.15 + direction.normalized() * strength).limit_length(max_speed)
 	last_touch = player
+	last_kicker = player
 	_update_collision_mask()
 	_update_animation()
+	kicked.emit()
 
 
 func _physics_process(delta: float) -> void:
@@ -63,6 +70,7 @@ func _physics_process(delta: float) -> void:
 			rebound = 0.3
 		elif collider.is_in_group("goal_post"):
 			rebound = 0.9
+			goal_post_hit.emit()
 		velocity = velocity.bounce(normal) * rebound
 		motion = collision.get_remainder().bounce(normal) * rebound
 		_update_collision_mask()
@@ -95,6 +103,7 @@ func reset_ball() -> void:
 	global_position = _start_position
 	velocity = Vector2.ZERO
 	last_touch = null
+	last_kicker = null
 	$AnimatedSprite2D.stop()
 	_update_collision_mask()
 
@@ -106,12 +115,18 @@ func place_for_restart(point: Vector2, owner: Node2D) -> void:
 	frozen = true
 	restart_owner = owner
 	last_touch = null
+	last_kicker = null
 	$AnimatedSprite2D.stop()
 	_update_collision_mask()
 
 
 func is_stopped() -> bool:
 	return velocity == Vector2.ZERO
+
+
+func radius() -> float:
+	var circle: CircleShape2D = $CollisionShape2D.shape
+	return circle.radius * maxf(absf(global_scale.x), absf(global_scale.y))
 
 
 func _update_collision_mask() -> void:

@@ -1,0 +1,27 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/match_audio.gd" id="1_script"]
+[ext_resource type="AudioStream" path="res://aset/football-crowd.wav" id="2_crowd"]
+[ext_resource type="AudioStream" path="res://aset/kicking-sounds.wav" id="3_kick"]
+[ext_resource type="AudioStream" path="res://aset/missed-shotv1.wav" id="4_missed"]
+[ext_resource type="AudioStream" path="res://aset/GOALv1.wav" id="5_goal"]
+
+[node name="MatchAudio" type="Node"]
+script = ExtResource("1_script")
+
+[node name="Crowd" type="AudioStreamPlayer" parent="."]
+process_mode = 3
+stream = ExtResource("2_crowd")
+volume_db = -16.0
+
+[node name="Kick" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("3_kick")
+volume_db = -5.0
+
+[node name="Missed" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("4_missed")
+volume_db = -6.0
+
+[node name="Goal" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("5_goal")
+volume_db = -4.0

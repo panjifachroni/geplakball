@@ -84,4 +84,7 @@ func _run() -> void:
 	check(ball.global_position == Vector2(800, 560), "Reset must restore ball")
 	check(nearest.position == game._initial_positions[nearest], "Reset must restore formation")
 	print("Gameplay checks completed; failures: ", failures)
+	game.queue_free()
+	await process_frame
+	await create_timer(0.15).timeout
 	quit(1 if failures else 0)

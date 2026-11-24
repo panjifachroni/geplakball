@@ -93,12 +93,15 @@ func _run() -> void:
 	# Crossing between posts is a goal rather than a corner.
 	game.reset_match()
 	ball.last_touch = red
-	game._on_ball_segment(Vector2(1420, 560), Vector2(1450, 560))
-	await create_timer(0.12).timeout
+	game._on_ball_segment(Vector2(1420, 560), Vector2(1460, 560))
+	await create_timer(game._restart_remaining + 0.1).timeout
 	check(game.score == [1, 0], "Right goal must score for red")
 	check(game.restart_kind == "Gol! Kickoff" and game.restart_team == 1, "Conceding team must get kickoff")
 	check(ball.position == Vector2(800, 560), "Kickoff must return to center")
 	game.reset_match()
 	check(game.score == [0, 0] and game.restart_taker == null and not ball.frozen, "R must clear restart and score state")
 	print("Restart checks completed; failures: ", failures)
+	game.queue_free()
+	await process_frame
+	await create_timer(0.15).timeout
 	quit(1 if failures else 0)

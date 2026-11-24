@@ -36,6 +36,11 @@ func _ready() -> void:
 	$Sprite2D.texture = team_texture
 	$Sprite2D.region_rect = idle_region
 	$SlapHitbox.position = foot_offset()
+	reset_facing()
+
+
+func reset_facing() -> void:
+	$Sprite2D.rotation = 0.0
 
 
 func center() -> Vector2:

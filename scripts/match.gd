@@ -7,8 +7,14 @@ const MAX_SHOT := 1450.0
 const PITCH := Rect2(165, 165, 1270, 790)
 const GOAL_TOP := 460.0
 const GOAL_BOTTOM := 660.0
+const GOAL_LINE_HALF_WIDTH := 5.0
 
 @export_range(1.0, 2.0, 0.1) var restart_delay: float = 1.5
+@export_range(0.0, 0.3, 0.01) var audio_anticipation: float = 0.15
+@export_range(0.0, 80.0, 5.0) var keeper_cover_distance: float = 60.0
+@export var keeper_cover_speed: float = 180.0
+@export var keeper_close_range: float = 260.0
+@export var keeper_cover_fade_range: float = 480.0
 
 var pending_restart: Dictionary = {}
 var _restart_remaining := 0.0
@@ -30,6 +36,7 @@ var _keeper_recoveries: Dictionary = {}
 
 @onready var ball = $Ball
 @onready var players = $Players.get_children()
+@onready var match_audio = $MatchAudio
 
 
 func _ready() -> void:
@@ -41,11 +48,13 @@ func _ready() -> void:
 			player.pushed.connect(_on_keeper_pushed.bind(player))
 		_initial_positions[player] = player.position
 	ball.segment_travelled.connect(_on_ball_segment)
+	ball.kicked.connect(match_audio.play_kick)
+	ball.goal_post_hit.connect(_on_goal_post_hit)
 	_ensure_ready_kicker()
 
 
 func can_take_shot(player: Node2D) -> bool:
-	return pending_restart.is_empty() and ball.is_stopped() and player.can_reach(ball) and (restart_taker == null or player == restart_taker)
+	return pending_restart.is_empty() and ball.is_stopped() and player != ball.last_kicker and player.can_reach(ball) and (restart_taker == null or player == restart_taker)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -115,6 +124,8 @@ func fire_aimed_shot() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	_update_keeper_position(delta)
+	_predict_goal_audio()
 	_update_restart_return(delta)
 	_update_keeper_recovery(delta)
 	if not pending_restart.is_empty():
@@ -132,8 +143,13 @@ func _physics_process(delta: float) -> void:
 			_ensure_ready_kicker()
 	$HUD/Power.value = aim_power() * 100.0 if aiming_player != null else 0.0
 	if not pending_restart.is_empty():
-		$HUD/Status.text = "%s — Tim %s | Menunggu bola berhenti..." % [pending_restart.kind, team_name(pending_restart.team)]
-		$HUD/Status2.text = "%s — Tim %s | Menunggu bola berhenti..." % [pending_restart.kind, team_name(pending_restart.team)]
+		var message: String
+		if pending_restart.kind == "Gol! Kickoff":
+			message = "GOOOL! Tim %s | Bersiap kickoff..." % team_name(1 - pending_restart.team)
+		else:
+			message = "%s — Tim %s | Menunggu bola berhenti..." % [pending_restart.kind, team_name(pending_restart.team)]
+		$HUD/Status.text = message
+		$HUD/Status2.text = message
 	elif aiming_player != null:
 		$HUD/Status.text = "Kekuatan %d%% | Lepas untuk menembak | Klik kanan: batal" % int(aim_power() * 100.0)
 		$HUD/Status2.text = "Kekuatan %d%% | Lepas untuk menembak | Klik kanan: batal" % int(aim_power() * 100.0)
@@ -153,10 +169,12 @@ func team_name(team: int) -> String:
 	return "Merah" if team == 0 else "Biru"
 
 
-func _nearest_player(point: Vector2, team: int = -1) -> Node2D:
+func _nearest_player(point: Vector2, team: int = -1, excluded: Node2D = null) -> Node2D:
 	var nearest: Node2D
 	var distance := INF
 	for player in players:
+		if player == excluded:
+			continue
 		if team != -1 and player.team != team:
 			continue
 		var candidate: float = player.center().distance_squared_to(point)
@@ -169,13 +187,49 @@ func _nearest_player(point: Vector2, team: int = -1) -> Node2D:
 func _ensure_ready_kicker() -> void:
 	if not ball.is_stopped():
 		return
-	for player in players:
-		if player.can_reach(ball):
-			ready_player = player
-			return
-	ready_player = _nearest_player(ball.global_position)
+	if is_instance_valid(ready_player) and ready_player != ball.last_kicker and ready_player.can_reach(ball):
+		_update_keeper_position()
+		return
+	ready_player = _nearest_player(ball.global_position, -1, ball.last_kicker)
 	if ready_player != null:
-		ready_player.prepare_kick(ball)
+		if not ready_player.can_reach(ball):
+			ready_player.prepare_kick(ball)
+	_update_keeper_position()
+
+
+func _update_keeper_position(delta: float = 0.0) -> void:
+	var shooter: Node2D = aiming_player
+	if not is_instance_valid(shooter):
+		shooter = restart_taker
+	if not is_instance_valid(shooter):
+		shooter = ready_player
+	for keeper in _keeper_homes:
+		keeper.reset_facing()
+		# Keep the chosen coverage during flight; do not override a kick or knockback.
+		if not ball.is_stopped() or not pending_restart.is_empty():
+			continue
+		if keeper in _keeper_recoveries or not keeper.knockback_velocity.is_zero_approx():
+			continue
+		if keeper == ready_player or keeper == restart_taker or keeper == aiming_player:
+			continue
+		var target: Vector2 = _keeper_homes[keeper]
+		if is_instance_valid(shooter) and shooter.team != keeper.team:
+			var offset_y: float = shooter.center().y - PITCH.get_center().y
+			if absf(offset_y) > 60.0:
+				target.y += clampf(offset_y / (PITCH.size.y * 0.5), -1.0, 1.0) * keeper_cover_distance
+				var goal_x: float = PITCH.position.x if keeper.team == 0 else PITCH.end.x
+				var nearest_mouth := Vector2(goal_x, clampf(shooter.center().y, GOAL_TOP, GOAL_BOTTOM))
+				var distance: float = shooter.center().distance_to(nearest_mouth)
+				var blend := clampf((keeper_cover_fade_range - distance) / maxf(1.0, keeper_cover_fade_range - keeper_close_range), 0.0, 1.0)
+				var body_shape: CircleShape2D = keeper.get_node("Body/CollisionShape2D").shape
+				var body_radius := body_shape.radius
+				var inside := 1.0 if keeper.team == 0 else -1.0
+				# Close the gap between keeper and post to less than one ball diameter.
+				var near_post := Vector2(goal_x + inside * (body_radius + ball.radius() - 3.0), GOAL_TOP + body_radius + 1.0 if offset_y < 0 else GOAL_BOTTOM - body_radius - 1.0)
+				near_post -= keeper.get_node("Body").position
+				target = target.lerp(near_post, blend)
+		var next_position: Vector2 = keeper.global_position.move_toward(target, keeper_cover_speed * delta)
+		keeper.move_player(next_position - keeper.global_position)
 
 
 # Intersect every travelled segment, including rebounds, with the pitch lines.
@@ -209,6 +263,12 @@ func find_exit(from: Vector2, to: Vector2) -> Dictionary:
 func _on_ball_segment(from: Vector2, to: Vector2) -> void:
 	if not pending_restart.is_empty() or ball.frozen:
 		return
+	var goal := find_goal_crossing(from, to)
+	if not goal.is_empty():
+		var defending_team := 0 if goal.side == "left" else 1
+		score[1 - defending_team] += 1
+		_queue_restart("Gol! Kickoff", defending_team, PITCH.get_center(), Vector2.ZERO)
+		return
 	var exit := find_exit(from, to)
 	if exit.is_empty():
 		return
@@ -222,16 +282,73 @@ func _on_ball_segment(from: Vector2, to: Vector2) -> void:
 	var defending_team := 0 if side == "left" else 1
 	var inward := Vector2.RIGHT if side == "left" else Vector2.LEFT
 	if point.y > GOAL_TOP and point.y < GOAL_BOTTOM:
-		score[1 - defending_team] += 1
-		_queue_restart("Gol! Kickoff", defending_team, PITCH.get_center(), Vector2.ZERO)
+		# Center crossing is not enough: the rear edge must clear the entire white line.
+		return
 	elif last_team == defending_team:
 		var corner_y := PITCH.position.y if point.y < PITCH.get_center().y else PITCH.end.y
 		var vertical := 1.0 if corner_y == PITCH.position.y else -1.0
 		_queue_restart("Corner", 1 - last_team, Vector2(point.x, corner_y), Vector2(inward.x, vertical))
 	else:
+		# A genuine attacking near miss: crossing just above/below the goal mouth.
+		if minf(absf(point.y - GOAL_TOP), absf(point.y - GOAL_BOTTOM)) <= 80.0:
+			match_audio.play_miss()
 		var keeper := _goalkeeper(defending_team)
 		var keeper_spot: Vector2 = _initial_positions[keeper] + keeper.foot_offset()
 		_queue_restart("Tendangan gawang", defending_team, keeper_spot, inward)
+
+
+func _on_goal_post_hit() -> void:
+	if pending_restart.is_empty() and not ball.frozen:
+		match_audio.play_miss()
+
+
+func find_goal_crossing(from: Vector2, to: Vector2) -> Dictionary:
+	var clearance: float = ball.radius() + GOAL_LINE_HALF_WIDTH
+	for side in ["left", "right"]:
+		var plane: float = PITCH.position.x - clearance if side == "left" else PITCH.end.x + clearance
+		var crosses: bool = from.x >= plane and to.x < plane if side == "left" else from.x <= plane and to.x > plane
+		if not crosses:
+			continue
+		var t := (plane - from.x) / (to.x - from.x)
+		var point := from.lerp(to, t)
+		if point.y - ball.radius() > GOAL_TOP and point.y + ball.radius() < GOAL_BOTTOM:
+			return {"side": side, "point": point}
+	return {}
+
+
+func _predict_goal_audio() -> void:
+	if ball.frozen or ball.play_locked or ball.is_stopped() or not pending_restart.is_empty():
+		return
+	var speed: float = ball.velocity.length()
+	var horizon := audio_anticipation
+	if ball.friction > 0.0:
+		horizon = minf(horizon, speed / ball.friction)
+	var distance := maxf(0.0, speed * horizon - 0.5 * ball.friction * horizon * horizon)
+	if distance <= 0.0:
+		return
+	var motion: Vector2 = ball.velocity.normalized() * distance
+	# Sweep the actual ball shape; a player/post before the line blocks a goal cue.
+	ball._update_collision_mask()
+	var collision: KinematicCollision2D = ball.move_and_collide(motion, true)
+	var reachable_motion: Vector2 = collision.get_travel() if collision != null else motion
+	var goal := find_goal_crossing(ball.global_position, ball.global_position + reachable_motion)
+	if not goal.is_empty():
+		match_audio.play_goal()
+		return
+	var exit := find_exit(ball.global_position, ball.global_position + reachable_motion)
+	if not exit.is_empty():
+		if exit.side == "left" or exit.side == "right":
+			var point: Vector2 = exit.point
+			if point.y > GOAL_TOP and point.y < GOAL_BOTTOM:
+				return
+			else:
+				var defending_team := 0 if exit.side == "left" else 1
+				if is_instance_valid(ball.last_touch) and ball.last_touch.team != defending_team:
+					if minf(absf(point.y - GOAL_TOP), absf(point.y - GOAL_BOTTOM)) <= 80.0:
+						match_audio.play_miss()
+		return
+	if collision != null and collision.get_collider().is_in_group("goal_post"):
+		match_audio.play_miss()
 
 
 func _goalkeeper(team: int) -> Node2D:
@@ -245,6 +362,9 @@ func _queue_restart(kind: String, team: int, point: Vector2, inward: Vector2) ->
 	# Snapshot the first exit; later rebounds cannot change the restart decision.
 	pending_restart = {"kind": kind, "team": team, "point": point, "inward": inward}
 	_restart_remaining = restart_delay
+	if kind == "Gol! Kickoff":
+		match_audio.play_goal()
+		_restart_remaining = match_audio.goal_kickoff_delay()
 	ball.play_locked = true
 	aiming_player = null
 	ready_player = null
@@ -276,6 +396,7 @@ func _award_restart(kind: String, team: int, point: Vector2, inward: Vector2) ->
 	ready_player = restart_taker
 	ball.place_for_restart(point, restart_taker)
 	restart_taker.prepare_kick(ball)
+	_update_keeper_position()
 	# Give the stationary restart ball enough room to leave the line cleanly.
 	for player in players:
 		if player == restart_taker:
@@ -372,9 +493,11 @@ func _restore_formation() -> void:
 		player.knockback_velocity = Vector2.ZERO
 		player.get_node("SlapTimer").stop()
 		player._on_slap_timer_timeout()
+		player.reset_facing()
 
 
 func reset_match() -> void:
+	match_audio.reset_effects()
 	_return_after_restart.clear()
 	pending_restart.clear()
 	_restart_remaining = 0.0

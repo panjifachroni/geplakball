@@ -9,10 +9,13 @@
 [ext_resource type="PackedScene" path="res://scenes/goal.tscn" id="7_goal"]
 [ext_resource type="FontFile" uid="uid://5ixf84ibkqxs" path="res://aset/boldpixels.ttf" id="8_tipki"]
 [ext_resource type="PackedScene" uid="uid://brde8ysjo5530" path="res://scenes/pause_menu.tscn" id="9_85g3d"]
+[ext_resource type="PackedScene" path="res://scenes/match_audio.tscn" id="10_audio"]
 
 [node name="GeplakBall" type="Node2D" unique_id=1941351203]
 texture_filter = 1
 script = ExtResource("5_match")
+
+[node name="MatchAudio" parent="." unique_id=2007348583 instance=ExtResource("10_audio")]
 
 [node name="Field" type="Sprite2D" parent="." unique_id=1594956528]
 texture = ExtResource("1_field")
@@ -29,7 +32,7 @@ scale = Vector2(-1, 1)
 y_sort_enabled = true
 
 [node name="RedGoalkeeper" parent="Players" unique_id=1413081385 instance=ExtResource("2_player")]
-position = Vector2(224, 601)
+position = Vector2(197, 607)
 is_goalkeeper = true
 
 [node name="RedPlayer1" parent="Players" unique_id=1806295020 instance=ExtResource("2_player")]
@@ -48,7 +51,7 @@ position = Vector2(742, 590)
 position = Vector2(1059, 918)
 
 [node name="BlueGoalkeeper" parent="Players" unique_id=328469915 instance=ExtResource("2_player")]
-position = Vector2(1359, 598)
+position = Vector2(1392, 598)
 idle_region = Rect2(56, 0, 40, 32)
 slap_region = Rect2(0, 0, 56, 32)
 team = 1

@@ -51,8 +51,8 @@ func _run() -> void:
 	await create_timer(0.3).timeout
 	check(game.score == [1, 0] and not game.pending_restart.is_empty(), "Net rebounds must not duplicate the goal")
 	check(ball.position != Vector2(800, 560), "Kickoff must not happen early")
-	await create_timer(1.2).timeout
-	check(game.pending_restart.is_empty() and ball.frozen, "Restart must happen after 1.5 seconds")
+	await create_timer(game._restart_remaining + 0.1).timeout
+	check(game.pending_restart.is_empty() and ball.frozen, "Goal restart must follow the goal audio cue")
 	check(ball.position == Vector2(800, 560) and game.restart_team == 1, "Goal must end in opponent kickoff")
 	# Snapshot the original out point even if the ball later moves elsewhere.
 	game.reset_match()
@@ -83,4 +83,7 @@ func _run() -> void:
 	check(game.pending_restart.is_empty() and game.restart_taker == null, "R must cancel pending restart")
 	check(not ball.play_locked and not ball.frozen, "R must unlock play")
 	print("Goal and delay checks completed; failures: ", failures)
+	game.queue_free()
+	await process_frame
+	await create_timer(0.15).timeout
 	quit(1 if failures else 0)

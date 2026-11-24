@@ -71,4 +71,7 @@ func _run() -> void:
 	check(game._keeper_recoveries.is_empty(), "R must clear pending keeper recovery")
 	check(blue.position == game._keeper_homes[blue], "Reset must center keeper")
 	print("Keeper recovery checks completed; failures: ", failures)
+	game.queue_free()
+	await process_frame
+	await create_timer(0.15).timeout
 	quit(1 if failures else 0)
