@@ -10,6 +10,9 @@
 [ext_resource type="FontFile" uid="uid://5ixf84ibkqxs" path="res://aset/boldpixels.ttf" id="8_tipki"]
 [ext_resource type="PackedScene" uid="uid://brde8ysjo5530" path="res://scenes/pause_menu.tscn" id="9_85g3d"]
 [ext_resource type="PackedScene" path="res://scenes/match_audio.tscn" id="10_audio"]
+[ext_resource type="Texture2D" uid="uid://2bih167d6er8" path="res://aset/PowerBar_Base.png" id="10_trceg"]
+[ext_resource type="Texture2D" uid="uid://c2ntb4d3r7ger" path="res://aset/PowerBar_Outline.png" id="11_a8y0u"]
+[ext_resource type="Texture2D" uid="uid://uvda4o7502or" path="res://aset/PowerBar_Energy.png" id="12_jkv2x"]
 
 [node name="GeplakBall" type="Node2D" unique_id=1941351203]
 texture_filter = 1
@@ -127,12 +130,30 @@ text = "Bola di kaki: klik pemain, tarik ke belakang, lalu lepas | R: ulang"
 horizontal_alignment = 1
 
 [node name="Power" type="ProgressBar" parent="HUD" unique_id=716309780]
+visible = false
 offset_left = 550.0
 offset_top = 1045.0
 offset_right = 1050.0
 offset_bottom = 1070.0
 mouse_filter = 2
 show_percentage = false
+
+[node name="Power2" type="TextureProgressBar" parent="HUD" unique_id=2027653909]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -550.0
+offset_top = 472.0
+offset_right = 550.0
+offset_bottom = 522.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture_under = ExtResource("10_trceg")
+texture_over = ExtResource("11_a8y0u")
+texture_progress = ExtResource("12_jkv2x")
 
 [node name="Score" type="Label" parent="HUD" unique_id=378370543]
 offset_left = 400.0

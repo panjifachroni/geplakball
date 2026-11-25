@@ -141,7 +141,7 @@ func _physics_process(delta: float) -> void:
 		_settle_time += delta
 		if aiming_player == null and _settle_time >= 0.3:
 			_ensure_ready_kicker()
-	$HUD/Power.value = aim_power() * 100.0 if aiming_player != null else 0.0
+	$HUD/Power2.value = aim_power() * 100.0 if aiming_player != null else 0.0
 	if not pending_restart.is_empty():
 		var message: String
 		if pending_restart.kind == "Gol! Kickoff":
