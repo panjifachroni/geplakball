@@ -112,18 +112,22 @@ offset_left = 70.0
 offset_top = 54.0
 offset_right = 1530.0
 offset_bottom = 99.0
+theme_override_colors/font_outline_color = Color(0.1254902, 0.1254902, 0.15294118, 1)
+theme_override_constants/outline_size = 8
 theme_override_fonts/font = ExtResource("8_tipki")
 theme_override_font_sizes/font_size = 45
 text = "Bola di kaki: klik pemain, tarik ke belakang, lalu lepas | R: ulang"
 horizontal_alignment = 1
 
 [node name="Status2" type="Label" parent="HUD" unique_id=1400047654]
-modulate = Color(0.1254902, 0.1254902, 0.15294118, 1)
 z_index = -1
 offset_left = 70.0
 offset_top = 59.0
 offset_right = 1530.0
 offset_bottom = 115.0
+theme_override_colors/font_color = Color(0.1254902, 0.1254902, 0.15294118, 1)
+theme_override_colors/font_outline_color = Color(0.1254902, 0.1254902, 0.15294118, 1)
+theme_override_constants/outline_size = 8
 theme_override_fonts/font = ExtResource("8_tipki")
 theme_override_font_sizes/font_size = 45
 text = "Bola di kaki: klik pemain, tarik ke belakang, lalu lepas | R: ulang"

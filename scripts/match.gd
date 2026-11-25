@@ -161,6 +161,7 @@ func _physics_process(delta: float) -> void:
 		$HUD/Status2.text = "Bola bergerak | R: ulang pertandingan"
 	else:
 		$HUD/Status.text = "Bola di kaki: klik pemain, tarik ke belakang, lalu lepas | R: ulang"
+		$HUD/Status2.text = "Bola di kaki: klik pemain, tarik ke belakang, lalu lepas | R: ulang"
 	$HUD/Score.text = "MERAH  %d  :  %d  BIRU" % score
 	$AimOverlay.queue_redraw()
 
