@@ -15,6 +15,7 @@
 [ext_resource type="Texture2D" uid="uid://uvda4o7502or" path="res://aset/PowerBar_Energy.png" id="12_jkv2x"]
 [ext_resource type="Texture2D" uid="uid://ctukff7278o16" path="res://aset/Pause Button Normal.png" id="13_jkv2x"]
 [ext_resource type="Texture2D" uid="uid://ce8sbnjbgodyo" path="res://aset/Pause Button HoverPressed.png" id="14_jbj1t"]
+[ext_resource type="Texture2D" uid="uid://o7dsg4vnup6q" path="res://aset/ScoreBoard.png" id="15_jbj1t"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_htemk"]
 texture = ExtResource("13_jkv2x")
@@ -118,6 +119,7 @@ script = ExtResource("6_aim")
 [node name="HUD" type="CanvasLayer" parent="." unique_id=218331897]
 
 [node name="Status" type="Label" parent="HUD" unique_id=709920062]
+visible = false
 modulate = Color(0.9490196, 0.9607843, 0.9843137, 1)
 offset_left = 70.0
 offset_top = 54.0
@@ -131,6 +133,7 @@ text = "Bola di kaki: klik pemain, tarik ke belakang, lalu lepas | R: ulang"
 horizontal_alignment = 1
 
 [node name="Status2" type="Label" parent="HUD" unique_id=1400047654]
+visible = false
 z_index = -1
 offset_left = 70.0
 offset_top = 59.0
@@ -160,24 +163,15 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -550.0
-offset_top = 472.0
+offset_top = 452.0
 offset_right = 550.0
-offset_bottom = 522.0
+offset_bottom = 502.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 texture_under = ExtResource("10_trceg")
 texture_over = ExtResource("11_a8y0u")
 texture_progress = ExtResource("12_jkv2x")
-
-[node name="Score" type="Label" parent="HUD" unique_id=378370543]
-offset_left = 400.0
-offset_top = 980.0
-offset_right = 1200.0
-offset_bottom = 1025.0
-theme_override_font_sizes/font_size = 28
-text = "MERAH  0  :  0  BIRU"
-horizontal_alignment = 1
 
 [node name="Button" type="Button" parent="HUD" unique_id=1737405733]
 offset_left = 25.0
@@ -187,6 +181,70 @@ offset_bottom = 105.0
 theme_override_styles/normal = SubResource("StyleBoxTexture_htemk")
 theme_override_styles/pressed = SubResource("StyleBoxTexture_14cdr")
 theme_override_styles/hover = SubResource("StyleBoxTexture_q4lci")
+
+[node name="TextureRect" type="TextureRect" parent="HUD" unique_id=1682766810]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -460.0
+offset_top = -544.0
+offset_right = 460.0
+offset_bottom = -414.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("15_jbj1t")
+
+[node name="ScoreRedShadow" type="Label" parent="HUD" unique_id=1542108694]
+offset_left = 615.0
+offset_top = 67.0
+offset_right = 677.0
+offset_bottom = 164.0
+theme_override_colors/font_color = Color(0.011764706, 0.015686275, 0.03137255, 1)
+theme_override_colors/font_outline_color = Color(0.011764706, 0.015686275, 0.03137255, 1)
+theme_override_constants/outline_size = 15
+theme_override_fonts/font = ExtResource("8_tipki")
+theme_override_font_sizes/font_size = 90
+text = "0"
+horizontal_alignment = 1
+
+[node name="ScoreRed" type="Label" parent="HUD" unique_id=1804063116]
+offset_left = 615.0
+offset_top = 61.0
+offset_right = 677.0
+offset_bottom = 158.0
+theme_override_colors/font_outline_color = Color(0.011764706, 0.015686275, 0.03137255, 1)
+theme_override_constants/outline_size = 15
+theme_override_fonts/font = ExtResource("8_tipki")
+theme_override_font_sizes/font_size = 90
+text = "0"
+horizontal_alignment = 1
+
+[node name="ScoreBlueShadow" type="Label" parent="HUD" unique_id=1315237332]
+offset_left = 923.0
+offset_top = 67.0
+offset_right = 985.0
+offset_bottom = 164.0
+theme_override_colors/font_color = Color(0.011764706, 0.015686275, 0.03137255, 1)
+theme_override_colors/font_outline_color = Color(0.011764706, 0.015686275, 0.03137255, 1)
+theme_override_constants/outline_size = 15
+theme_override_fonts/font = ExtResource("8_tipki")
+theme_override_font_sizes/font_size = 90
+text = "0"
+horizontal_alignment = 1
+
+[node name="ScoreBlue" type="Label" parent="HUD" unique_id=1104676178]
+offset_left = 923.0
+offset_top = 61.0
+offset_right = 985.0
+offset_bottom = 158.0
+theme_override_colors/font_outline_color = Color(0.011764706, 0.015686275, 0.03137255, 1)
+theme_override_constants/outline_size = 15
+theme_override_fonts/font = ExtResource("8_tipki")
+theme_override_font_sizes/font_size = 90
+text = "0"
+horizontal_alignment = 1
 
 [node name="PauseMenu" parent="." unique_id=455983114 instance=ExtResource("9_85g3d")]
 visible = false
