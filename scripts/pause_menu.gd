@@ -13,6 +13,14 @@ func _input(event: InputEvent) -> void:
 			visible = true
 			get_tree().paused = true
 
+func _on_pause_pressed() -> void:
+	if get_tree().paused:
+		visible = false
+		get_tree().paused = false
+	else:
+		visible = true
+		get_tree().paused = true
+
 func _on_resume_pressed() -> void:
 	visible = false
 	get_tree().paused = false

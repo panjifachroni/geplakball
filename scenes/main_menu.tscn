@@ -2,7 +2,9 @@
 
 [ext_resource type="Texture2D" uid="uid://0fqsw4oydm38" path="res://aset/field.png" id="1_bqqt6"]
 [ext_resource type="Script" uid="uid://b8vx1uwx326tj" path="res://scripts/main_menu.gd" id="1_wu84c"]
+[ext_resource type="Shader" uid="uid://bjhwjvxgslbu0" path="res://scenes/scroll.gdshader" id="3_lgwnu"]
 [ext_resource type="Texture2D" uid="uid://c7fagckctw24v" path="res://aset/Play Button Normal.png" id="4_5dd4i"]
+[ext_resource type="Texture2D" uid="uid://lqqrib3echy1" path="res://aset/rolling ball main menu.png" id="4_flqon"]
 [ext_resource type="Texture2D" uid="uid://cramchh1d40h1" path="res://aset/GeplakBall Logo.png" id="4_wu84c"]
 [ext_resource type="Texture2D" uid="uid://dk1lfxt47wyuy" path="res://aset/Play Button HoverPressed.png" id="5_lgwnu"]
 [ext_resource type="Texture2D" uid="uid://dsvmyldeuuvgx" path="res://aset/Credit Button Normal.png" id="6_flqon"]
@@ -13,6 +15,10 @@
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_htemk"]
 texture = ExtResource("1_bqqt6")
 modulate_color = Color(0.796243, 0.796243, 0.796243, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_htemk"]
+shader = ExtResource("3_lgwnu")
+shader_parameter/speed = 0.1
 
 [sub_resource type="Image" id="Image_jk1qb"]
 data = {
@@ -334,6 +340,15 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_htemk")
+
+[node name="Pattern" type="TextureRect" parent="." unique_id=1867724826]
+self_modulate = Color(1, 1, 1, 0.3137255)
+texture_repeat = 2
+material = SubResource("ShaderMaterial_htemk")
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+texture = ExtResource("4_flqon")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=666119002]
 layout_mode = 1

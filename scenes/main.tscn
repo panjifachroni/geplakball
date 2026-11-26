@@ -13,6 +13,17 @@
 [ext_resource type="Texture2D" uid="uid://2bih167d6er8" path="res://aset/PowerBar_Base.png" id="10_trceg"]
 [ext_resource type="Texture2D" uid="uid://c2ntb4d3r7ger" path="res://aset/PowerBar_Outline.png" id="11_a8y0u"]
 [ext_resource type="Texture2D" uid="uid://uvda4o7502or" path="res://aset/PowerBar_Energy.png" id="12_jkv2x"]
+[ext_resource type="Texture2D" uid="uid://ctukff7278o16" path="res://aset/Pause Button Normal.png" id="13_jkv2x"]
+[ext_resource type="Texture2D" uid="uid://ce8sbnjbgodyo" path="res://aset/Pause Button HoverPressed.png" id="14_jbj1t"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_htemk"]
+texture = ExtResource("13_jkv2x")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_14cdr"]
+texture = ExtResource("14_jbj1t")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_q4lci"]
+texture = ExtResource("14_jbj1t")
 
 [node name="GeplakBall" type="Node2D" unique_id=1941351203]
 texture_filter = 1
@@ -168,5 +179,16 @@ theme_override_font_sizes/font_size = 28
 text = "MERAH  0  :  0  BIRU"
 horizontal_alignment = 1
 
+[node name="Button" type="Button" parent="HUD" unique_id=1737405733]
+offset_left = 25.0
+offset_top = 25.0
+offset_right = 105.0
+offset_bottom = 105.0
+theme_override_styles/normal = SubResource("StyleBoxTexture_htemk")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_14cdr")
+theme_override_styles/hover = SubResource("StyleBoxTexture_q4lci")
+
 [node name="PauseMenu" parent="." unique_id=455983114 instance=ExtResource("9_85g3d")]
 visible = false
+
+[connection signal="pressed" from="HUD/Button" to="PauseMenu" method="_on_pause_pressed"]
