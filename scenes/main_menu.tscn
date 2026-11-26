@@ -18,7 +18,6 @@ modulate_color = Color(0.796243, 0.796243, 0.796243, 1)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_htemk"]
 shader = ExtResource("3_lgwnu")
-shader_parameter/speed = 0.1
 
 [sub_resource type="Image" id="Image_jk1qb"]
 data = {
