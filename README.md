@@ -2,7 +2,23 @@
 
 Prototipe Godot 4.7 untuk permainan bola kertas.
 
+## Durasi pertandingan
+
+- Pertandingan berlangsung 3 menit dengan hitung mundur `03:00` di bagian atas.
+- Waktu tetap berjalan saat out, persiapan tendangan, dan selebrasi gol. Menu pause
+  menghentikan timer; suara crowd tetap berjalan.
+- Pada `00:00`, pertandingan berakhir, bola/pemain berhenti, dan skor dikunci.
+  Tidak ada layar hasil tambahan: `aset/whistle.wav` diputar satu kali hingga
+  selesai, lalu otomatis kembali ke menu utama dan musik menu dimulai.
+
 ## Kontrol
+
+Tim merah dikendalikan pemain; tim biru memakai AI mode Santai secara default.
+AI berpikir 1–2 detik, menunjukkan bidikan sebentar, lalu memilih operan atau
+tembakan dengan variasi arah/kekuatan. Kadang mencoba tembakan jauh yang berisiko.
+AI mengikuti aturan jangkauan, larangan dribble, bola berhenti, dan restart yang
+sama; pause, reset, dan akhir pertandingan membatalkan/menghentikan aksinya.
+Matikan properti Blue AI Enabled pada scene utama untuk kembali mengontrol dua tim.
 
 - Jalankan proyek dengan F5.
 - Ketika bola diam, klik dan tahan pemain yang memiliki bola tepat di kaki.
@@ -19,10 +35,19 @@ memberi dorongan berat. Di bawah 20%, bola melewati pemain tanpa mendorongnya.
 Ambang ini mengikuti kecepatan maksimum bola (default 1600 piksel/detik).
 Collision tiang dan jaring tetap aktif untuk semua kecepatan bola.
 Bidikan dan tendangan berikutnya hanya bisa dilakukan ketika kecepatan bola nol.
+Saat tendangan dilepas, hanya collision antara bola dan penendang yang diabaikan
+sampai bola melewati tubuh penendang. Ini memungkinkan passing ke belakang.
+Collision penendang dipulihkan setelah bola keluar dari tubuhnya, saat bola
+memantul, berhenti, atau saat restart/reset. Pemain lain tetap memiliki collision
+sesuai aturan kecepatan, dan bola pantulan dapat mengenai penendang lagi.
 Pemain yang baru menendang tidak boleh mengambil bola lagi. Setelah bola berhenti,
 pemain terdekat dari kedua tim, selain penendang terakhir, menjadi pengambil
 berikutnya. Pantulan pasif tidak menghapus larangan ini; tendangan pemain lain
 atau restart permainan baru menghapusnya. Tidak ada dribbling dengan sentuhan kecil.
+Pemilihan memakai jarak pusat tubuh pemain ke bola saat berhenti, tanpa preferensi
+tim. Pemain lama yang kebetulan masih dalam jangkauan tidak boleh melewati kandidat
+yang lebih dekat. Setelah pemain terpilih diteleport, kepemilikan dikunci sampai
+tendangan berikutnya agar pilihan tidak berganti hanya akibat teleport tersebut.
 
 ## Bola keluar dan restart
 
@@ -66,6 +91,10 @@ Belum ada giliran tim untuk tembakan dalam permainan terbuka.
 
 ## Suara pertandingan
 
+- `aset/whistle.wav`: peluit akhir pertandingan, lalu otomatis kembali ke menu
+  utama setelah suara selesai. Pause tidak memotong peluit akhir.
+- `aset/footie.wav`: musik berulang khusus menu utama. Berhenti ketika mulai
+  pertandingan; tidak diputar di menu pause. Kembali ke menu utama memutarnya lagi.
 - `aset/kicking-sounds.wav`: diputar saat tendangan benar-benar mengenai bola.
 - `aset/football-crowd.wav`: mulai bersama pertandingan, berulang, dan tetap
   berjalan saat menu pause dibuka dengan Esc. Berhenti ketika meninggalkan pertandingan.
@@ -96,6 +125,11 @@ godot --headless --path . --script res://tests/audio_smoke.gd
 godot --headless --path . --script res://tests/audio_prediction_smoke.gd
 godot --headless --path . --script res://tests/goal_turn_facing_smoke.gd
 godot --headless --path . --script res://tests/near_post_smoke.gd
+godot --headless --path . --script res://tests/back_pass_smoke.gd
+godot --headless --path . --script res://tests/match_timer_smoke.gd
+godot --headless --path . --script res://tests/menu_music_smoke.gd
+godot --headless --path . --script res://tests/casual_ai_smoke.gd
+godot --headless --path . --script res://tests/nearest_pickup_smoke.gd
 ```
 
 Pemeriksaan mencakup arah dan daya tembakan, teleport pemain ke bola, pantulan,

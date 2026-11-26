@@ -12,6 +12,7 @@ func check(condition: bool, message: String) -> void:
 
 func _run() -> void:
 	var game = load("res://scenes/main.tscn").instantiate()
+	game.blue_ai_enabled = false
 	root.add_child(game)
 	await physics_frame
 	await physics_frame

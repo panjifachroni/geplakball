@@ -5,6 +5,8 @@ func _ready() -> void:
 	get_tree().paused = false
 
 func _input(event: InputEvent) -> void:
+	if get_parent().get("match_over") == true:
+		return
 	if Input.is_action_just_pressed("ui_cancel"):
 		if get_tree().paused:
 			visible = false
@@ -14,6 +16,8 @@ func _input(event: InputEvent) -> void:
 			get_tree().paused = true
 
 func _on_pause_pressed() -> void:
+	if get_parent().get("match_over") == true:
+		return
 	if get_tree().paused:
 		visible = false
 		get_tree().paused = false

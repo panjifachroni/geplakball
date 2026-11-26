@@ -25,3 +25,7 @@ volume_db = -6.0
 [node name="Goal" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("5_goal")
 volume_db = -4.0
+
+[node name="Whistle" type="AudioStreamPlayer" parent="."]
+process_mode = 3
+volume_db = -3.0

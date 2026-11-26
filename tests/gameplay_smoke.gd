@@ -16,6 +16,7 @@ func sync_physics() -> void:
 
 func _run() -> void:
 	var game = load("res://scenes/main.tscn").instantiate()
+	game.blue_ai_enabled = false
 	root.add_child(game)
 	await sync_physics()
 	var ball = game.get_node("Ball")
@@ -54,8 +55,8 @@ func _run() -> void:
 	check(nearest.can_reach(ball), "Teleport must finish within kicking reach")
 	check(ball.velocity == Vector2.ZERO, "Approaching must not automatically shoot")
 	for player in game.players:
-		if player != nearest:
-			check(player.position == baseline[player], "Only nearest player should approach")
+		if player != nearest and not player.is_goalkeeper:
+			check(player.position == baseline[player], "Only nearest field player should retrieve; keepers may adjust cover")
 	# Automatic retrieval waits for the ball to settle.
 	game.reset_match()
 	await sync_physics()

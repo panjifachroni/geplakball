@@ -6,6 +6,9 @@ var _goal_for_shot := false
 
 
 func _ready() -> void:
+	# Runtime WAV loading also works before Godot imports a newly added asset.
+	$Whistle.stream = AudioStreamWAV.load_from_file("res://aset/whistle.wav")
+	$Whistle.stream.loop_mode = AudioStreamWAV.LOOP_DISABLED
 	var crowd_stream := $Crowd.stream.duplicate() as AudioStreamWAV
 	crowd_stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
 	crowd_stream.loop_begin = 0
@@ -48,5 +51,11 @@ func reset_effects() -> void:
 	$Kick.stop()
 	$Missed.stop()
 	$Goal.stop()
+	$Whistle.stop()
+
+
+func play_full_time() -> void:
+	reset_effects()
+	$Whistle.play()
 
 

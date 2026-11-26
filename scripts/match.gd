@@ -3,6 +3,7 @@ extends Node2D
 const MAX_DRAG := 240.0
 const MIN_SHOT := 260.0
 const MAX_SHOT := 1450.0
+const CasualAI := preload("res://scripts/casual_ai.gd")
 # White line centers in the original 1600 x 1120 field texture.
 const PITCH := Rect2(165, 165, 1270, 790)
 const GOAL_TOP := 460.0
@@ -15,6 +16,13 @@ const GOAL_LINE_HALF_WIDTH := 5.0
 @export var keeper_cover_speed: float = 180.0
 @export var keeper_close_range: float = 260.0
 @export var keeper_cover_fade_range: float = 480.0
+@export var match_duration: float = 180.0
+@export var blue_ai_enabled := true
+
+var _blue_ai = CasualAI.new()
+
+var time_remaining: float = 180.0
+var match_over := false
 
 var pending_restart: Dictionary = {}
 var _restart_remaining := 0.0
@@ -33,6 +41,9 @@ var _initial_positions: Dictionary = {}
 var _return_after_restart: Dictionary = {}
 var _keeper_homes: Dictionary = {}
 var _keeper_recoveries: Dictionary = {}
+var _pickup_locked := false
+var _pickup_position := Vector2.ZERO
+var _pickup_last_kicker: Node2D
 
 @onready var ball = $Ball
 @onready var players = $Players.get_children()
@@ -40,6 +51,10 @@ var _keeper_recoveries: Dictionary = {}
 
 
 func _ready() -> void:
+	time_remaining = match_duration
+	match_audio.get_node("Whistle").finished.connect(_on_full_time_whistle_finished)
+	_update_match_clock()
+	_update_scoreboard()
 	for player in players:
 		if player.is_goalkeeper:
 			# Keep the defensive depth, and align the keeper's body with goal center.
@@ -48,18 +63,38 @@ func _ready() -> void:
 			player.pushed.connect(_on_keeper_pushed.bind(player))
 		_initial_positions[player] = player.position
 	ball.segment_travelled.connect(_on_ball_segment)
-	ball.kicked.connect(match_audio.play_kick)
+	ball.kicked.connect(_on_ball_kicked)
 	ball.goal_post_hit.connect(_on_goal_post_hit)
 	_ensure_ready_kicker()
 
 
 func can_take_shot(player: Node2D) -> bool:
-	return pending_restart.is_empty() and ball.is_stopped() and player != ball.last_kicker and player.can_reach(ball) and (restart_taker == null or player == restart_taker)
+	var owner: Node2D = restart_taker if is_instance_valid(restart_taker) else ready_player
+	return not match_over and pending_restart.is_empty() and ball.is_stopped() and player == owner and player != ball.last_kicker and player.can_reach(ball)
+
+
+func _on_ball_kicked() -> void:
+	_pickup_locked = false
+	ready_player = null
+	match_audio.play_kick()
+
+
+func can_human_take_shot(player: Node2D) -> bool:
+	if not can_take_shot(player):
+		return false
+	if not blue_ai_enabled:
+		return true
+	var owner: Node2D = restart_taker if is_instance_valid(restart_taker) else ready_player
+	return player.team == 0 and owner == player
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_R:
 		reset_match()
+		return
+	if match_over:
+		return
+	if blue_ai_enabled and is_instance_valid(aiming_player) and aiming_player.team == 1:
 		return
 	if event is InputEventMouseMotion and aiming_player != null:
 		drag_end = get_global_mouse_position()
@@ -78,7 +113,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		var distance := INF
 		for player in players:
 			var local_mouse: Vector2 = player.to_local(mouse)
-			if Rect2(-60, -96, 120, 96).has_point(local_mouse) and can_take_shot(player):
+			if Rect2(-60, -96, 120, 96).has_point(local_mouse) and can_human_take_shot(player):
 				var candidate: float = mouse.distance_to(player.center())
 				if candidate < distance:
 					closest = player
@@ -124,6 +159,19 @@ func fire_aimed_shot() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if match_over:
+		return
+	time_remaining = maxf(0.0, time_remaining - delta)
+	_update_match_clock()
+	if time_remaining <= 0.0:
+		_finish_match()
+		return
+	# Choose before keeper coverage/recovery can move candidates on the stop frame.
+	if not ball.is_stopped():
+		_pickup_locked = false
+		ready_player = null
+	elif restart_taker == null and pending_restart.is_empty() and aiming_player == null:
+		_ensure_ready_kicker()
 	_update_keeper_position(delta)
 	_predict_goal_audio()
 	_update_restart_return(delta)
@@ -141,6 +189,7 @@ func _physics_process(delta: float) -> void:
 		_settle_time += delta
 		if aiming_player == null and _settle_time >= 0.3:
 			_ensure_ready_kicker()
+	_blue_ai.tick(self, delta)
 	$HUD/Power2.value = aim_power() * 100.0 if aiming_player != null else 0.0
 	if not pending_restart.is_empty():
 		var message: String
@@ -151,8 +200,12 @@ func _physics_process(delta: float) -> void:
 		$HUD/Status.text = message
 		$HUD/Status2.text = message
 	elif aiming_player != null:
-		$HUD/Status.text = "Kekuatan %d%% | Lepas untuk menembak | Klik kanan: batal" % int(aim_power() * 100.0)
-		$HUD/Status2.text = "Kekuatan %d%% | Lepas untuk menembak | Klik kanan: batal" % int(aim_power() * 100.0)
+		var message := "AI Biru membidik..." if blue_ai_enabled and aiming_player.team == 1 else "Kekuatan %d%% | Lepas untuk menembak | Klik kanan: batal" % int(aim_power() * 100.0)
+		$HUD/Status.text = message
+		$HUD/Status2.text = message
+	elif is_instance_valid(_blue_ai.actor):
+		$HUD/Status.text = "AI Biru sedang berpikir... Kamu tim Merah"
+		$HUD/Status2.text = $HUD/Status.text
 	elif restart_taker != null:
 		$HUD/Status.text = "%s — Tim %s | Bidik ke dalam lapangan" % [restart_kind, team_name(restart_team)]
 		$HUD/Status2.text = "%s — Tim %s | Bidik ke dalam lapangan" % [restart_kind, team_name(restart_team)]
@@ -162,10 +215,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		$HUD/Status.text = "Bola di kaki: klik pemain, tarik ke belakang, lalu lepas | R: ulang"
 		$HUD/Status2.text = "Bola di kaki: klik pemain, tarik ke belakang, lalu lepas | R: ulang"
-	$HUD/ScoreRed.text = str(score[0])
-	$HUD/ScoreRedShadow.text = str(score[0])
-	$HUD/ScoreBlue.text = str(score[1])
-	$HUD/ScoreBlueShadow.text = str(score[1])
+	_update_scoreboard()
 	$AimOverlay.queue_redraw()
 
 
@@ -189,15 +239,27 @@ func _nearest_player(point: Vector2, team: int = -1, excluded: Node2D = null) ->
 
 
 func _ensure_ready_kicker() -> void:
-	if not ball.is_stopped():
+	if match_over or not pending_restart.is_empty() or not ball.is_stopped():
 		return
-	if is_instance_valid(ready_player) and ready_player != ball.last_kicker and ready_player.can_reach(ball):
+	if is_instance_valid(restart_taker):
+		ready_player = restart_taker
+		return
+	# Only retain an owner chosen in this stationary episode, never an arbitrary
+	# cached in-range player. After teleporting, retain the choice so it cannot flip.
+	if _pickup_locked and ball.last_kicker == _pickup_last_kicker and ball.global_position.distance_to(_pickup_position) < 0.5 and is_instance_valid(ready_player) and ready_player != ball.last_kicker and ready_player.can_reach(ball):
 		_update_keeper_position()
 		return
-	ready_player = _nearest_player(ball.global_position, -1, ball.last_kicker)
+	var closest := _nearest_player(ball.global_position, -1, ball.last_kicker)
+	if closest != ready_player:
+		_blue_ai.reset()
+		aiming_player = null
+	ready_player = closest
 	if ready_player != null:
 		if not ready_player.can_reach(ball):
 			ready_player.prepare_kick(ball)
+		_pickup_locked = true
+		_pickup_position = ball.global_position
+		_pickup_last_kicker = ball.last_kicker
 	_update_keeper_position()
 
 
@@ -265,12 +327,13 @@ func find_exit(from: Vector2, to: Vector2) -> Dictionary:
 
 
 func _on_ball_segment(from: Vector2, to: Vector2) -> void:
-	if not pending_restart.is_empty() or ball.frozen:
+	if match_over or not pending_restart.is_empty() or ball.frozen:
 		return
 	var goal := find_goal_crossing(from, to)
 	if not goal.is_empty():
 		var defending_team := 0 if goal.side == "left" else 1
 		score[1 - defending_team] += 1
+		_update_scoreboard()
 		_queue_restart("Gol! Kickoff", defending_team, PITCH.get_center(), Vector2.ZERO)
 		return
 	var exit := find_exit(from, to)
@@ -302,7 +365,7 @@ func _on_ball_segment(from: Vector2, to: Vector2) -> void:
 
 
 func _on_goal_post_hit() -> void:
-	if pending_restart.is_empty() and not ball.frozen:
+	if not match_over and pending_restart.is_empty() and not ball.frozen:
 		match_audio.play_miss()
 
 
@@ -363,6 +426,10 @@ func _goalkeeper(team: int) -> Node2D:
 
 
 func _queue_restart(kind: String, team: int, point: Vector2, inward: Vector2) -> void:
+	if match_over:
+		return
+	_blue_ai.reset()
+	_pickup_locked = false
 	# Snapshot the first exit; later rebounds cannot change the restart decision.
 	pending_restart = {"kind": kind, "team": team, "point": point, "inward": inward}
 	_restart_remaining = restart_delay
@@ -386,6 +453,8 @@ func _finish_pending_restart() -> void:
 
 
 func _award_restart(kind: String, team: int, point: Vector2, inward: Vector2) -> void:
+	_blue_ai.reset()
+	_pickup_locked = false
 	_return_after_restart.clear()
 	aiming_player = null
 	_settle_time = 0.0
@@ -501,6 +570,14 @@ func _restore_formation() -> void:
 
 
 func reset_match() -> void:
+	_blue_ai.reset()
+	_pickup_locked = false
+	_pickup_last_kicker = null
+	get_tree().paused = false
+	$PauseMenu.visible = false
+	match_over = false
+	time_remaining = match_duration
+	_update_match_clock()
 	match_audio.reset_effects()
 	_return_after_restart.clear()
 	pending_restart.clear()
@@ -512,10 +589,69 @@ func reset_match() -> void:
 	restart_kind = ""
 	restart_inward = Vector2.ZERO
 	score = [0, 0]
+	_update_scoreboard()
 	_settle_time = 0.0
 	_restore_formation()
 	ball.reset_ball()
 	_ensure_ready_kicker()
+
+
+func _update_match_clock() -> void:
+	var seconds := ceili(time_remaining)
+	$HUD/MatchClock.text = "%02d:%02d" % [int(seconds / 60.0), seconds % 60]
+
+
+func _update_scoreboard() -> void:
+	$HUD/ScoreRed.text = str(score[0])
+	$HUD/ScoreRedShadow.text = str(score[0])
+	$HUD/ScoreBlue.text = str(score[1])
+	$HUD/ScoreBlueShadow.text = str(score[1])
+
+
+func _finish_match() -> void:
+	if match_over:
+		return
+	_blue_ai.reset()
+	_pickup_locked = false
+	get_tree().paused = false
+	$PauseMenu.hide()
+	match_over = true
+	time_remaining = 0.0
+	_update_match_clock()
+	pending_restart.clear()
+	_return_after_restart.clear()
+	_keeper_recoveries.clear()
+	aiming_player = null
+	ready_player = null
+	restart_taker = null
+	restart_team = -1
+	restart_kind = ""
+	ball.finish_match()
+	for player in players:
+		player.knockback_velocity = Vector2.ZERO
+		player.impact_tier = player.ImpactTier.NONE
+		player.get_node("SlapTimer").stop()
+		player._on_slap_timer_timeout()
+	_update_scoreboard()
+	$HUD/Status.text = "Waktu habis"
+	$HUD/Status2.text = $HUD/Status.text
+	$HUD/Power2.value = 0
+	$AimOverlay.queue_redraw()
+	match_audio.play_full_time()
+
+
+func _on_full_time_whistle_finished() -> void:
+	_complete_full_time.call_deferred()
+
+
+func _complete_full_time() -> void:
+	if match_over and is_inside_tree():
+		_return_to_main_menu()
+
+
+func _return_to_main_menu() -> void:
+	get_tree().paused = false
+	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
 
 
 func draw_aim(canvas: Node2D) -> void:
