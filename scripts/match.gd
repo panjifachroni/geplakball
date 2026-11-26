@@ -10,6 +10,8 @@ const GOAL_TOP := 460.0
 const GOAL_BOTTOM := 660.0
 const GOAL_LINE_HALF_WIDTH := 5.0
 
+const GoalScene := preload("res://scenes/goal_scene.tscn")
+
 @export_range(1.0, 2.0, 0.1) var restart_delay: float = 1.5
 @export_range(0.0, 0.3, 0.01) var audio_anticipation: float = 0.15
 @export_range(0.0, 80.0, 5.0) var keeper_cover_distance: float = 60.0
@@ -334,6 +336,12 @@ func _on_ball_segment(from: Vector2, to: Vector2) -> void:
 		var defending_team := 0 if goal.side == "left" else 1
 		score[1 - defending_team] += 1
 		_update_scoreboard()
+		var goal_instance := GoalScene.instantiate()
+		add_child(goal_instance)
+		get_tree().create_timer(4.5).timeout.connect(func() -> void:
+			if is_instance_valid(goal_instance):
+				goal_instance.queue_free()
+		)
 		_queue_restart("Gol! Kickoff", defending_team, PITCH.get_center(), Vector2.ZERO)
 		return
 	var exit := find_exit(from, to)
@@ -599,6 +607,7 @@ func reset_match() -> void:
 func _update_match_clock() -> void:
 	var seconds := ceili(time_remaining)
 	$HUD/MatchClock.text = "%02d:%02d" % [int(seconds / 60.0), seconds % 60]
+	$HUD/MatchClockShadow.text = "%02d:%02d" % [int(seconds / 60.0), seconds % 60]
 
 
 func _update_scoreboard() -> void:

@@ -1,0 +1,49 @@
+[gd_scene format=3 uid="uid://n2qs7un7ey7c"]
+
+[ext_resource type="FontFile" uid="uid://5ixf84ibkqxs" path="res://aset/boldpixels.ttf" id="1_c1spr"]
+
+[node name="GoalScene" type="CanvasLayer" unique_id=1396031374]
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1371096282]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 18.0
+offset_bottom = 18.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.60784316)
+
+[node name="RichTextLabel2" type="RichTextLabel" parent="." unique_id=1220539535]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 18.0
+offset_bottom = 18.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/default_color = Color(0.011764706, 0.015686275, 0.03137255, 1)
+theme_override_colors/font_outline_color = Color(0.011764706, 0.015686275, 0.03137255, 1)
+theme_override_constants/outline_size = 50
+theme_override_fonts/normal_font = ExtResource("1_c1spr")
+theme_override_font_sizes/normal_font_size = 220
+bbcode_enabled = true
+text = "[wave amp=20.0 freq=5.0][shake rate=25.0 level=18]GOAL!![/shake][/wave]"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RichTextLabel" type="RichTextLabel" parent="." unique_id=1175989395]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_outline_color = Color(0.011764706, 0.015686275, 0.03137255, 1)
+theme_override_constants/outline_size = 50
+theme_override_fonts/normal_font = ExtResource("1_c1spr")
+theme_override_font_sizes/normal_font_size = 220
+bbcode_enabled = true
+text = "[wave amp=20.0 freq=5.0][shake rate=25.0 level=18]GOAL!![/shake][/wave]"
+horizontal_alignment = 1
+vertical_alignment = 1

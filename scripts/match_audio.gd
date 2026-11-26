@@ -57,5 +57,3 @@ func reset_effects() -> void:
 func play_full_time() -> void:
 	reset_effects()
 	$Whistle.play()
-
-

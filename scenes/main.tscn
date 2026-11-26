@@ -246,16 +246,28 @@ theme_override_font_sizes/font_size = 90
 text = "0"
 horizontal_alignment = 1
 
-[node name="MatchClock" type="Label" parent="HUD"]
+[node name="MatchClockShadow" type="Label" parent="HUD" unique_id=82562759]
+offset_left = 710.0
+offset_top = 27.0
+offset_right = 915.0
+offset_bottom = 72.0
+theme_override_colors/font_color = Color(0.011764706, 0.015686275, 0.03137255, 1)
+theme_override_colors/font_outline_color = Color(0.011764706, 0.015686275, 0.03137255, 1)
+theme_override_constants/outline_size = 10
+theme_override_fonts/font = ExtResource("8_tipki")
+theme_override_font_sizes/font_size = 42
+text = "03:00"
+horizontal_alignment = 1
+
+[node name="MatchClock" type="Label" parent="HUD" unique_id=597613025]
 offset_left = 710.0
 offset_top = 24.0
 offset_right = 915.0
 offset_bottom = 69.0
-mouse_filter = 2
+theme_override_colors/font_outline_color = Color(0.011764706, 0.015686275, 0.03137255, 1)
+theme_override_constants/outline_size = 10
 theme_override_fonts/font = ExtResource("8_tipki")
 theme_override_font_sizes/font_size = 42
-theme_override_colors/font_outline_color = Color(0.08, 0.1, 0.08, 1)
-theme_override_constants/outline_size = 6
 text = "03:00"
 horizontal_alignment = 1
 
