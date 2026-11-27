@@ -64,6 +64,10 @@ func _run() -> void:
 		check(game.restart_taker == blue, "Keeper must be the selected taker in setup")
 		shoot(game, blue, inward)
 		await create_timer(0.24).timeout
+		if kind in ["Out", "Corner"]:
+			check(blue.position != game._keeper_homes[blue], "Keeper taking out must also wait until ball stops")
+			ball.velocity = Vector2.ZERO
+			game._update_restart_return(0.02)
 		check(blue.position == game._keeper_homes[blue], "Keeper restart taker must return to goal center")
 	# A reset clears pending recovery.
 	game.reset_match()

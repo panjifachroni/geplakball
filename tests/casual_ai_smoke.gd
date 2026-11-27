@@ -22,12 +22,12 @@ func _run() -> void:
 	check(game.can_human_take_shot(game.ready_player), "Human must control ready red player")
 	await create_timer(2.1).timeout
 	check(ball.last_kicker == null and ai.actor == null, "AI must never steal red's turn")
-	# Natural 1-2 second thinking delay, including pause/resume.
+	# Normal CPU still has a human-readable thinking delay, including pause/resume.
 	var keeper = game.get_node("Players/BlueGoalkeeper")
 	var spot: Vector2 = game._initial_positions[keeper] + keeper.foot_offset()
 	game._award_restart("Tendangan gawang", 1, spot, Vector2.LEFT)
 	ai.tick(game, 0.0)
-	check(ai.actor == keeper and ai.think_remaining >= 1.0 and ai.think_remaining <= 2.0, "Blue must think for 1-2 seconds")
+	check(ai.actor == keeper and ai.think_remaining >= 0.8 and ai.think_remaining <= 1.4, "Normal CPU must think for 0.8-1.4 seconds")
 	check(not game.can_human_take_shot(keeper), "Human must not control blue while AI is enabled")
 	await create_timer(0.25).timeout
 	check(ball.frozen and ball.last_kicker == null, "AI must not kick instantly")

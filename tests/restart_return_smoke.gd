@@ -38,9 +38,12 @@ func _run() -> void:
 	check(taker.global_position == kick_spot, "Taker must finish the slap before returning")
 	check(ball.velocity.length() > 1000, "Return scheduling must preserve shot strength")
 	await create_timer(0.24).timeout
-	check(taker.center().distance_to(point + Vector2(0, 140)) < 0.1, "Out taker must move a little inside from the restart point")
+	check(taker.position == kick_spot and not ball.is_stopped(), "Out taker must wait outside while ball is moving")
+	ball.velocity = Vector2.ZERO
+	game._update_restart_return(0.02)
+	check(taker.center().distance_to(point + Vector2(0, 140)) <= 70, "Out taker must rejoin near the touchline, with room for its whole body")
 	check(taker.global_position.distance_to(home) > 10, "Out taker must not return to the saved old position")
-	check(ball.position.distance_to(point) > 100 and ball.velocity.length() > 0, "Ball must continue travelling after taker returns")
+	check(ball.position.distance_to(point) > 100 and ball.is_stopped(), "Out taker returns only after ball stops")
 	# Every corner returns its taker only a moderate distance inside both lines.
 	var corners := [
 		[Vector2(1435, 165), Vector2(-1, 1), 0],
@@ -55,8 +58,12 @@ func _run() -> void:
 		home = game._nearest_player(corner_point, corner[2]).position
 		game._award_restart("Corner", corner[2], corner_point, inward)
 		taker = game.restart_taker
+		kick_spot = taker.position
 		shoot(game, inward)
 		await create_timer(0.24).timeout
+		check(taker.position == kick_spot and not ball.is_stopped(), "Corner taker must wait while ball moves")
+		ball.velocity = Vector2.ZERO
+		game._update_restart_return(0.02)
 		var center: Vector2 = taker.center()
 		check(game.PITCH.grow(-30).has_point(center), "Corner taker must finish inside the pitch")
 		check(center.distance_to(corner_point) >= 150 and center.distance_to(corner_point) < 320, "Corner return must keep moderate distance from corner")
@@ -80,4 +87,9 @@ func _run() -> void:
 	check(game._return_after_restart.is_empty(), "Goal kicks must not schedule out/corner returns")
 	check(taker.position == home, "Keeper must stay in keeper position")
 	print("Restart return checks completed; failures: ", failures)
+	game.match_audio.reset_effects()
+	await create_timer(0.12).timeout
+	game.queue_free()
+	await process_frame
+	await create_timer(0.2).timeout
 	quit(1 if failures else 0)

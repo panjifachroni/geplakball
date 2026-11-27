@@ -22,6 +22,11 @@ func _run() -> void:
 	menu._on_start_pressed()
 	await process_frame
 	await process_frame
+	check(current_scene.scene_file_path == "res://scenes/select_mode.tscn", "Start must open mode selection")
+	check(current_scene.get_node("MenuMusic").playing, "Mode selection must retain menu music")
+	current_scene.get_node("Button2").pressed.emit()
+	await process_frame
+	await process_frame
 	var game = current_scene
 	check(game.scene_file_path == "res://scenes/main.tscn", "Start must enter match")
 	check(old_music.get_ref() == null, "Menu audio node must be freed on entering match")

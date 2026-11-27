@@ -4,10 +4,11 @@
 [ext_resource type="Shader" uid="uid://bjhwjvxgslbu0" path="res://scenes/scroll.gdshader" id="2_kvsyr"]
 [ext_resource type="Texture2D" uid="uid://lqqrib3echy1" path="res://aset/rolling ball main menu.png" id="3_tekgv"]
 [ext_resource type="FontFile" uid="uid://5ixf84ibkqxs" path="res://aset/boldpixels.ttf" id="4_ak4u5"]
-[ext_resource type="Texture2D" uid="uid://kukks2n5resl" path="res://aset/1v1 Button Normal.png" id="5_mafh4"]
-[ext_resource type="Texture2D" uid="uid://y4umn487ki8b" path="res://aset/1v1 Button HoverPressed.png" id="6_i4hvc"]
-[ext_resource type="Texture2D" uid="uid://cbedom7x2w6od" path="res://aset/1vCPU Button Normal.png" id="7_704sx"]
-[ext_resource type="Texture2D" uid="uid://b5x5576eo27ev" path="res://aset/1vCPU Button HoverPressed.png" id="8_kt60l"]
+[ext_resource type="Texture2D" path="res://aset/1v1 Button Normal.png" id="5_mafh4"]
+[ext_resource type="Texture2D" path="res://aset/1v1 Button HoverPressed.png" id="6_i4hvc"]
+[ext_resource type="Texture2D" path="res://aset/1vCPU Button Normal.png" id="7_704sx"]
+[ext_resource type="Texture2D" path="res://aset/1vCPU Button HoverPressed.png" id="8_kt60l"]
+[ext_resource type="Script" path="res://scripts/select_mode.gd" id="9_script"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_8qiha"]
 texture = ExtResource("1_2m67m")
@@ -35,6 +36,7 @@ texture = ExtResource("8_kt60l")
 texture = ExtResource("8_kt60l")
 
 [node name="Select Mode" type="Control" unique_id=1625305694]
+script = ExtResource("9_script")
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -109,6 +111,7 @@ text = "[wave amp=20.0 freq=5.0]Pilih Mode Permainan[/wave]"
 horizontal_alignment = 1
 
 [node name="Button" type="Button" parent="." unique_id=892509106]
+tooltip_text = "1 lawan 1 lokal: dua pemain bergantian memakai mouse di perangkat yang sama."
 layout_mode = 0
 offset_left = 280.0
 offset_top = 510.0
@@ -119,6 +122,7 @@ theme_override_styles/pressed = SubResource("StyleBoxTexture_14cdr")
 theme_override_styles/hover = SubResource("StyleBoxTexture_q4lci")
 
 [node name="Button2" type="Button" parent="." unique_id=988964687]
+tooltip_text = "Lawan CPU: kamu tim merah, CPU tim biru."
 layout_mode = 0
 offset_left = 930.0
 offset_top = 510.0
@@ -127,3 +131,6 @@ offset_bottom = 640.0
 theme_override_styles/normal = SubResource("StyleBoxTexture_pj0hq")
 theme_override_styles/pressed = SubResource("StyleBoxTexture_ugcl7")
 theme_override_styles/hover = SubResource("StyleBoxTexture_0kyq7")
+
+[connection signal="pressed" from="Button" to="." method="_on_local_pressed"]
+[connection signal="pressed" from="Button2" to="." method="_on_cpu_pressed"]

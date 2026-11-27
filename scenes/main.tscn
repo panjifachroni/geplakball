@@ -16,6 +16,8 @@
 [ext_resource type="Texture2D" uid="uid://ctukff7278o16" path="res://aset/Pause Button Normal.png" id="13_jkv2x"]
 [ext_resource type="Texture2D" uid="uid://ce8sbnjbgodyo" path="res://aset/Pause Button HoverPressed.png" id="14_jbj1t"]
 [ext_resource type="Texture2D" uid="uid://o7dsg4vnup6q" path="res://aset/ScoreBoard.png" id="15_jbj1t"]
+[ext_resource type="Texture2D" path="res://aset/keeper1.png" id="16_keeper"]
+[ext_resource type="Texture2D" path="res://aset/keeper2.png" id="17_keeper"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_htemk"]
 texture = ExtResource("13_jkv2x")
@@ -48,7 +50,10 @@ y_sort_enabled = true
 
 [node name="RedGoalkeeper" parent="Players" unique_id=1413081385 instance=ExtResource("2_player")]
 position = Vector2(197, 607)
+idle_region = Rect2(0, 0, 40, 35)
+slap_region = Rect2(40, 0, 56, 35)
 is_goalkeeper = true
+team_texture = ExtResource("16_keeper")
 
 [node name="RedPlayer1" parent="Players" unique_id=1806295020 instance=ExtResource("2_player")]
 position = Vector2(422, 471)
@@ -71,7 +76,7 @@ idle_region = Rect2(56, 0, 40, 32)
 slap_region = Rect2(0, 0, 56, 32)
 team = 1
 is_goalkeeper = true
-team_texture = ExtResource("3_blue")
+team_texture = ExtResource("17_keeper")
 
 [node name="BluePlayer1" parent="Players" unique_id=1240067013 instance=ExtResource("2_player")]
 position = Vector2(1196, 446)
@@ -194,6 +199,7 @@ offset_right = 460.0
 offset_bottom = -414.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 texture = ExtResource("15_jbj1t")
 
 [node name="ScoreRedShadow" type="Label" parent="HUD" unique_id=1542108694]

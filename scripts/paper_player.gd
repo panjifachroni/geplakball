@@ -9,6 +9,7 @@ signal pushed
 		idle_region = value
 		if is_node_ready():
 			$Sprite2D.region_rect = idle_region
+			_sync_body_collision()
 @export var slap_region := Rect2(32, 0, 64, 32)
 @export var slap_strength: float = 1050.0
 @export_enum("Merah", "Biru") var team: int = 0
@@ -24,17 +25,23 @@ var _current_strength: float = 1050.0
 
 var _slap_active := false
 var _hit_balls: Array[Node2D] = []
+var _placement_key := ""
+var _placement_local := Rect2()
 
 @export var team_texture: Texture2D = preload("res://aset/paper-player.png"):
 	set(value):
 		team_texture = value
 		if is_node_ready():
 			$Sprite2D.texture = team_texture
+			_sync_body_collision()
 
 
 func _ready() -> void:
 	$Sprite2D.texture = team_texture
 	$Sprite2D.region_rect = idle_region
+	# Per-player shape: changing one pose must not resize every teammate's collider.
+	$Body/CollisionShape2D.shape = RectangleShape2D.new()
+	_sync_body_collision()
 	$SlapHitbox.position = foot_offset()
 	reset_facing()
 
@@ -45,6 +52,46 @@ func reset_facing() -> void:
 
 func center() -> Vector2:
 	return $Body.global_position
+
+
+func _sync_body_collision() -> void:
+	var region: Rect2 = $Sprite2D.region_rect
+	var image := team_texture.get_image()
+	var used: Rect2i = image.get_region(Rect2i(region)).get_used_rect()
+	if used.size == Vector2i.ZERO:
+		used = Rect2i(Vector2i.ZERO, Vector2i(region.size))
+	var pixel_scale: Vector2 = $Sprite2D.scale.abs()
+	var local_center := Vector2(used.position) + Vector2(used.size) * 0.5 - region.size * 0.5
+	$Body.position = $Sprite2D.position + local_center * pixel_scale
+	var shape: RectangleShape2D = $Body/CollisionShape2D.shape
+	shape.size = Vector2(used.size) * pixel_scale + Vector2(4, 4)
+
+
+func collision_half_extents() -> Vector2:
+	var shape: RectangleShape2D = $Body/CollisionShape2D.shape
+	return shape.size * $Body.global_scale.abs() * 0.5
+
+
+func collision_bounds() -> Rect2:
+	var half := collision_half_extents()
+	return Rect2(center() - half, half * 2.0)
+
+
+func placement_bounds(at_position: Vector2) -> Rect2:
+	# Formation spacing follows the standing body, not the entire slap animation.
+	var key := str([team_texture.get_instance_id(), idle_region, $Sprite2D.scale, $Sprite2D.position])
+	if key == _placement_key:
+		return Rect2(at_position + _placement_local.position, _placement_local.size)
+	var result := Rect2()
+	for region: Rect2 in [idle_region]:
+		var used := team_texture.get_image().get_region(Rect2i(region)).get_used_rect()
+		var size: Vector2 = Vector2(used.size) * $Sprite2D.scale.abs() + Vector2(4, 4)
+		var offset: Vector2 = $Sprite2D.position + (Vector2(used.position) + Vector2(used.size) * 0.5 - region.size * 0.5) * $Sprite2D.scale.abs()
+		var bounds := Rect2(offset - size * 0.5, size)
+		result = bounds if result.size == Vector2.ZERO else result.merge(bounds)
+	_placement_key = key
+	_placement_local = result
+	return Rect2(at_position + result.position, result.size)
 
 
 func foot_offset() -> Vector2:
@@ -109,6 +156,7 @@ func slap(direction: Vector2 = Vector2.ZERO, strength: float = -1.0) -> void:
 	_current_strength = slap_strength if strength < 0.0 else strength
 	_hit_balls.clear()
 	$Sprite2D.region_rect = slap_region
+	_sync_body_collision()
 	$SlapTimer.start()
 	# Query feet directly: teleporting must not wait for cached Area2D overlaps.
 	for body in get_tree().get_nodes_in_group("balls"):
@@ -127,3 +175,4 @@ func _on_slap_timer_timeout() -> void:
 	_slap_active = false
 	_hit_balls.clear()
 	$Sprite2D.region_rect = idle_region
+	_sync_body_collision()

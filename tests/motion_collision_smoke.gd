@@ -46,18 +46,18 @@ func _run() -> void:
 	await create_timer(1.3).timeout
 	check(game.pending_restart.is_empty() and ball.frozen, "Restart must complete after natural stop")
 	check(ball.position.distance_to(Vector2(800, 165)) < 0.1, "Waiting for stop must preserve out crossing point")
-	# Isolated live collisions: very slow passes through, medium/heavy rebound and push.
+	# All speeds rebound; only medium/heavy impacts push.
 	for speed in [200.0, 600.0, 1200.0]:
 		var player = load("res://scenes/paper_player.tscn").instantiate()
 		player.position = Vector2(2000, 2032)
 		root.add_child(player)
 		var sample = load("res://scenes/ball.tscn").instantiate()
-		sample.position = Vector2(1955, 2000)
+		sample.position = Vector2(player.collision_bounds().position.x - 12, player.center().y)
 		root.add_child(sample)
 		sample.velocity = Vector2(speed, 0)
 		await create_timer(0.12).timeout
 		if speed < 320.0:
-			check(sample.position.x > 1962 and sample.velocity.x > 0, "Below 20% ball must pass through player")
+			check(sample.velocity.x < 0, "Below 20% ball must still rebound")
 			check(player.position.x == 2000, "Below 20% must not displace player")
 		elif speed < 960.0:
 			check(sample.velocity.x < 0, "Medium impact must rebound")
