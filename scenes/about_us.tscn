@@ -1,0 +1,276 @@
+[gd_scene format=3 uid="uid://baehc3ac44dog"]
+
+[ext_resource type="Texture2D" uid="uid://0fqsw4oydm38" path="res://aset/field.png" id="1_45va6"]
+[ext_resource type="Script" uid="uid://bt7y40hyluvpq" path="res://scenes/about_us.gd" id="1_uwxm4"]
+[ext_resource type="Shader" uid="uid://bjhwjvxgslbu0" path="res://scenes/scroll.gdshader" id="2_uwxm4"]
+[ext_resource type="Texture2D" uid="uid://lqqrib3echy1" path="res://aset/rolling ball main menu.png" id="3_mq1hs"]
+[ext_resource type="FontFile" uid="uid://5ixf84ibkqxs" path="res://aset/boldpixels.ttf" id="4_phkgf"]
+[ext_resource type="Texture2D" uid="uid://co3gb5ro8506" path="res://aset/Back Button Normal.png" id="5_2x42b"]
+[ext_resource type="Texture2D" uid="uid://csvbgkmcsxx1k" path="res://aset/Back Button HoverPressed.png" id="6_5d1ke"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_23nyf"]
+texture = ExtResource("1_45va6")
+modulate_color = Color(0.796243, 0.796243, 0.796243, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_iswfk"]
+shader = ExtResource("2_uwxm4")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_q31f3"]
+texture = ExtResource("5_2x42b")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_tkgju"]
+texture = ExtResource("6_5d1ke")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ipnma"]
+texture = ExtResource("6_5d1ke")
+
+[node name="AboutUs" type="Control" unique_id=1502777612]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_uwxm4")
+
+[node name="Panel" type="Panel" parent="." unique_id=1664006996]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_23nyf")
+
+[node name="Pattern" type="TextureRect" parent="." unique_id=242667243]
+self_modulate = Color(1, 1, 1, 0.16078432)
+texture_repeat = 2
+material = SubResource("ShaderMaterial_iswfk")
+layout_mode = 0
+offset_right = 1600.0
+offset_bottom = 1200.0
+texture = ExtResource("3_mq1hs")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=466684158]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.28627452)
+
+[node name="RichTextLabel2" type="RichTextLabel" parent="." unique_id=237387145]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 86.0
+offset_top = 198.0
+offset_right = -86.0
+offset_bottom = -829.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/default_color = Color(0.011764706, 0.015686275, 0.03137255, 1)
+theme_override_colors/font_outline_color = Color(0.011764706, 0.015686275, 0.03137255, 1)
+theme_override_constants/outline_size = 20
+theme_override_fonts/normal_font = ExtResource("4_phkgf")
+theme_override_font_sizes/normal_font_size = 100
+text = "Permainan ini dikembangkan oleh"
+horizontal_alignment = 1
+
+[node name="RichTextLabel" type="RichTextLabel" parent="." unique_id=282740587]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 86.0
+offset_top = 189.0
+offset_right = -86.0
+offset_bottom = -836.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_outline_color = Color(0.011764706, 0.015686275, 0.03137255, 1)
+theme_override_constants/outline_size = 20
+theme_override_fonts/normal_font = ExtResource("4_phkgf")
+theme_override_font_sizes/normal_font_size = 100
+bbcode_enabled = true
+text = "Permainan ini dikembangkan oleh"
+horizontal_alignment = 1
+
+[node name="RichTextLabel3" type="RichTextLabel" parent="." unique_id=450476221]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 86.0
+offset_top = 370.0
+offset_right = -86.0
+offset_bottom = -657.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/default_color = Color(0.011764706, 0.015686275, 0.03137255, 1)
+theme_override_colors/font_outline_color = Color(0.011764706, 0.015686275, 0.03137255, 1)
+theme_override_constants/outline_size = 20
+theme_override_fonts/normal_font = ExtResource("4_phkgf")
+theme_override_font_sizes/normal_font_size = 70
+bbcode_enabled = true
+text = "[wave amp=20.0 freq=5.0]T. M. Panji Fachroni - 245150200111052[/wave]"
+horizontal_alignment = 1
+
+[node name="RichTextLabel4" type="RichTextLabel" parent="." unique_id=1790368358]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 86.0
+offset_top = 361.0
+offset_right = -86.0
+offset_bottom = -664.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_outline_color = Color(0.011764706, 0.015686275, 0.03137255, 1)
+theme_override_constants/outline_size = 20
+theme_override_fonts/normal_font = ExtResource("4_phkgf")
+theme_override_font_sizes/normal_font_size = 70
+bbcode_enabled = true
+text = "[wave amp=20.0 freq=5.0]T. M. Panji Fachroni - 245150200111052[/wave]"
+horizontal_alignment = 1
+
+[node name="RichTextLabel5" type="RichTextLabel" parent="." unique_id=414702211]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 86.0
+offset_top = 491.0
+offset_right = -86.0
+offset_bottom = -536.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/default_color = Color(0.011764706, 0.015686275, 0.03137255, 1)
+theme_override_colors/font_outline_color = Color(0.011764706, 0.015686275, 0.03137255, 1)
+theme_override_constants/outline_size = 20
+theme_override_fonts/normal_font = ExtResource("4_phkgf")
+theme_override_font_sizes/normal_font_size = 70
+bbcode_enabled = true
+text = "[wave amp=20.0 freq=5.0]Ahmad Hilalul Fadli - 245150201111045[/wave]"
+horizontal_alignment = 1
+
+[node name="RichTextLabel6" type="RichTextLabel" parent="." unique_id=2072236162]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 86.0
+offset_top = 482.0
+offset_right = -86.0
+offset_bottom = -543.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_outline_color = Color(0.011764706, 0.015686275, 0.03137255, 1)
+theme_override_constants/outline_size = 20
+theme_override_fonts/normal_font = ExtResource("4_phkgf")
+theme_override_font_sizes/normal_font_size = 70
+bbcode_enabled = true
+text = "[wave amp=20.0 freq=5.0]Ahmad Hilalul Fadli - 245150201111045[/wave]"
+horizontal_alignment = 1
+
+[node name="RichTextLabel7" type="RichTextLabel" parent="." unique_id=1066630762]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 86.0
+offset_top = 617.0
+offset_right = -86.0
+offset_bottom = -410.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/default_color = Color(0.011764706, 0.015686275, 0.03137255, 1)
+theme_override_colors/font_outline_color = Color(0.011764706, 0.015686275, 0.03137255, 1)
+theme_override_constants/outline_size = 20
+theme_override_fonts/normal_font = ExtResource("4_phkgf")
+theme_override_font_sizes/normal_font_size = 70
+bbcode_enabled = true
+text = "[wave amp=20.0 freq=5.0]Muhammad Zaid Robbani - 245150207111012[/wave]"
+horizontal_alignment = 1
+
+[node name="RichTextLabel8" type="RichTextLabel" parent="." unique_id=904620063]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 86.0
+offset_top = 608.0
+offset_right = -86.0
+offset_bottom = -417.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_outline_color = Color(0.011764706, 0.015686275, 0.03137255, 1)
+theme_override_constants/outline_size = 20
+theme_override_fonts/normal_font = ExtResource("4_phkgf")
+theme_override_font_sizes/normal_font_size = 70
+bbcode_enabled = true
+text = "[wave amp=20.0 freq=5.0]Muhammad Zaid Robbani - 245150207111012[/wave]"
+horizontal_alignment = 1
+
+[node name="RichTextLabel9" type="RichTextLabel" parent="." unique_id=122274265]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 86.0
+offset_top = 744.0
+offset_right = -86.0
+offset_bottom = -283.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/default_color = Color(0.011764706, 0.015686275, 0.03137255, 1)
+theme_override_colors/font_outline_color = Color(0.011764706, 0.015686275, 0.03137255, 1)
+theme_override_constants/outline_size = 20
+theme_override_fonts/normal_font = ExtResource("4_phkgf")
+theme_override_font_sizes/normal_font_size = 70
+bbcode_enabled = true
+text = "[wave amp=20.0 freq=5.0]Richard Samuel Hatane - 245150200111061 
+[/wave]"
+horizontal_alignment = 1
+
+[node name="RichTextLabel10" type="RichTextLabel" parent="." unique_id=1326841586]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 86.0
+offset_top = 735.0
+offset_right = -86.0
+offset_bottom = -290.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_outline_color = Color(0.011764706, 0.015686275, 0.03137255, 1)
+theme_override_constants/outline_size = 20
+theme_override_fonts/normal_font = ExtResource("4_phkgf")
+theme_override_font_sizes/normal_font_size = 70
+bbcode_enabled = true
+text = "[wave amp=20.0 freq=5.0]Richard Samuel Hatane - 245150200111061 
+[/wave]"
+horizontal_alignment = 1
+
+[node name="Button" type="Button" parent="." unique_id=328991400]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -195.0
+offset_top = -227.0
+offset_right = 195.0
+offset_bottom = -97.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/normal = SubResource("StyleBoxTexture_q31f3")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_tkgju")
+theme_override_styles/hover = SubResource("StyleBoxTexture_ipnma")
+
+[connection signal="pressed" from="Button" to="." method="_on_back_pressed"]

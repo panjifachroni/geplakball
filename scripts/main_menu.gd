@@ -25,7 +25,8 @@ func _on_start_pressed() -> void:
 
 
 func _on_credits_pressed() -> void:
-	pass # Replace with function body.
+	_menu_music.stop()
+	get_tree().change_scene_to_file("res://scenes/about_us.tscn")
 
 
 func _on_quit_pressed() -> void:

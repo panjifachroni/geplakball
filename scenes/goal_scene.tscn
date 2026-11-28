@@ -4,17 +4,6 @@
 
 [node name="GoalScene" type="CanvasLayer" unique_id=1396031374]
 
-[node name="ColorRect" type="ColorRect" parent="." unique_id=1371096282]
-visible = false
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = 18.0
-offset_bottom = 18.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0, 0, 0, 0.60784316)
-
 [node name="RichTextLabel2" type="RichTextLabel" parent="." unique_id=1220539535]
 anchors_preset = 15
 anchor_right = 1.0
