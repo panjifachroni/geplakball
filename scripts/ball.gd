@@ -18,8 +18,6 @@ var play_locked := false
 var _launch_body: PhysicsBody2D
 var _launch_start := Vector2.ZERO
 var _launch_direction := Vector2.ZERO
-var _launch_clearance := 0.0
-var _launch_separation := 0.0
 
 
 func _ready() -> void:
@@ -154,16 +152,8 @@ func radius() -> float:
 func _begin_launch_exception(player: Node2D) -> void:
 	_clear_launch_exception()
 	_launch_body = player.get_node("Body") as PhysicsBody2D
-	var body_shape: CircleShape2D = _launch_body.get_node("CollisionShape2D").shape
 	_launch_start = global_position
 	_launch_direction = velocity.normalized()
-	_launch_separation = radius() + body_shape.radius * maxf(absf(_launch_body.global_scale.x), absf(_launch_body.global_scale.y)) + 2.0
-	var offset := global_position - _launch_body.global_position
-	var projection := offset.dot(_launch_direction)
-	var discriminant := projection * projection - (offset.length_squared() - _launch_separation * _launch_separation)
-	_launch_clearance = 2.0
-	if discriminant >= 0.0:
-		_launch_clearance = maxf(2.0, -projection + sqrt(discriminant) + 2.0)
 	add_collision_exception_with(_launch_body)
 
 
@@ -175,8 +165,27 @@ func _update_launch_exception() -> void:
 		_clear_launch_exception()
 		return
 	var progress := (global_position - _launch_start).dot(_launch_direction)
-	if progress >= _launch_clearance and global_position.distance_to(_launch_body.global_position) > _launch_separation:
+	var bounds: Rect2 = _launch_body.get_parent().collision_bounds().grow(radius() + 2.0)
+	var exit_distance := _launch_exit_distance(bounds)
+	if not bounds.has_point(global_position) and progress >= exit_distance:
 		_clear_launch_exception()
+
+
+func _launch_exit_distance(bounds: Rect2) -> float:
+	var entry := -INF
+	var leaving := INF
+	for axis in [0, 1]:
+		if absf(_launch_direction[axis]) < 0.0001:
+			if _launch_start[axis] < bounds.position[axis] or _launch_start[axis] > bounds.end[axis]:
+				return 0.0
+			continue
+		var first: float = (bounds.position[axis] - _launch_start[axis]) / _launch_direction[axis]
+		var second: float = (bounds.end[axis] - _launch_start[axis]) / _launch_direction[axis]
+		entry = maxf(entry, minf(first, second))
+		leaving = minf(leaving, maxf(first, second))
+	if leaving < entry or leaving < 0.0:
+		return 0.0
+	return leaving
 
 
 func _clear_launch_exception() -> void:
@@ -186,8 +195,6 @@ func _clear_launch_exception() -> void:
 
 
 func _update_collision_mask() -> void:
-	# Goal frame/net always collide. Very slow balls can pass through paper players.
-	var hits_players := velocity.length() >= max_speed * 0.2
-	collision_mask = 12 if hits_players else 8
-	# Slow balls also must not block a paper player that is still being pushed.
-	collision_layer = 2 if hits_players else 16
+	# Every rebound remains physical; speed only controls the player's knockback.
+	collision_mask = 12
+	collision_layer = 2

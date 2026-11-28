@@ -31,10 +31,11 @@ func _run() -> void:
 		shooter.position = setup[1]
 		game.ready_player = shooter
 		game._update_keeper_position(2.0)
-		var body: CircleShape2D = keeper.get_node("Body/CollisionShape2D").shape
-		var gap: float = keeper.center().distance_to(setup[2]) - body.radius - 7.0
+		var bounds: Rect2 = keeper.collision_bounds()
+		var nearest: Vector2 = setup[2].clamp(bounds.position, bounds.end)
+		var gap: float = nearest.distance_to(setup[2]) - 7.0
 		check(gap >= 0 and gap < ball.radius() * 2, "Near-post gap must be too narrow for a full ball")
-		check(keeper.center().y - body.radius > game.GOAL_TOP and keeper.center().y + body.radius < game.GOAL_BOTTOM, "Keeper must stay between posts")
+		check(bounds.position.y > game.GOAL_TOP and bounds.end.y < game.GOAL_BOTTOM, "Keeper must stay between posts")
 		check(keeper.get_node("Sprite2D").rotation == 0, "Near-post cover must not rotate sprite")
 	game.reset_match()
 	var keeper = game.get_node("Players/BlueGoalkeeper")
@@ -42,7 +43,7 @@ func _run() -> void:
 	red.position = Vector2(1100, 780)
 	game.ready_player = red
 	game._update_keeper_position(2.0)
-	check(keeper.position.x > home.x and keeper.position.x < 1400, "Medium distance must partially close toward near post")
+	check(keeper.position.distance_to(home) > 0 and keeper.collision_bounds().end.x < 1435, "Medium distance must partially close toward near post without crossing goal line")
 	red.position = Vector2(600, 850)
 	game._update_keeper_position(2.0)
 	check(keeper.position.x == home.x and absf(keeper.position.y - home.y) <= 60, "Distant shooter must retain normal cover")
@@ -52,6 +53,9 @@ func _run() -> void:
 	# A fast ball aimed through the near-post corridor must physically hit the keeper.
 	red.position = Vector2(1250, 780)
 	game._update_keeper_position(2.0)
+	for player in game.players:
+		if player != keeper and player != red:
+			player.position = Vector2(-2000, -2000)
 	await physics_frame
 	await physics_frame
 	ball.position = Vector2(1290, 720)

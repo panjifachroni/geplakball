@@ -4,6 +4,9 @@ const MAX_DRAG := 240.0
 const MIN_SHOT := 260.0
 const MAX_SHOT := 1450.0
 const CasualAI := preload("res://scripts/casual_ai.gd")
+const RestartFormations := preload("res://scripts/restart_formations.gd")
+const KeeperSaves := preload("res://scripts/keeper_saves.gd")
+const PlayerSpacing := preload("res://scripts/player_spacing.gd")
 # White line centers in the original 1600 x 1120 field texture.
 const PITCH := Rect2(165, 165, 1270, 790)
 const GOAL_TOP := 460.0
@@ -13,15 +16,26 @@ const GOAL_LINE_HALF_WIDTH := 5.0
 const GoalScene := preload("res://scenes/goal_scene.tscn")
 
 @export_range(1.0, 2.0, 0.1) var restart_delay: float = 1.5
-@export_range(0.0, 0.3, 0.01) var audio_anticipation: float = 0.15
+@export var chance_audio_range: float = 320.0
+@export var chance_audio_margin: float = 80.0
 @export_range(0.0, 80.0, 5.0) var keeper_cover_distance: float = 60.0
 @export var keeper_cover_speed: float = 180.0
 @export var keeper_close_range: float = 260.0
 @export var keeper_cover_fade_range: float = 480.0
+@export var keeper_reaction_delay: float = 0.20
+@export var keeper_save_speed: float = 155.0
+@export var keeper_save_max_move: float = 75.0
+@export var keeper_save_range: float = 500.0
+@export var counter_retreat_distance: float = 80.0
 @export var match_duration: float = 180.0
 @export var blue_ai_enabled := true
 
 var _blue_ai = CasualAI.new()
+var _restart_formations = RestartFormations.new()
+var _keeper_saves = KeeperSaves.new()
+var _player_spacing = PlayerSpacing.new()
+var _advanced_play: Dictionary = {}
+var restart_formation := ""
 
 var time_remaining: float = 180.0
 var match_over := false
@@ -76,6 +90,9 @@ func can_take_shot(player: Node2D) -> bool:
 
 
 func _on_ball_kicked() -> void:
+	_keeper_saves.reset()
+	if not _advanced_play.is_empty() and is_instance_valid(ball.last_kicker):
+		_advanced_play.counter_started = ball.last_kicker.team != _advanced_play.team
 	_pickup_locked = false
 	ready_player = null
 	match_audio.play_kick()
@@ -175,7 +192,7 @@ func _physics_process(delta: float) -> void:
 	elif restart_taker == null and pending_restart.is_empty() and aiming_player == null:
 		_ensure_ready_kicker()
 	_update_keeper_position(delta)
-	_predict_goal_audio()
+	_update_chance_audio()
 	_update_restart_return(delta)
 	_update_keeper_recovery(delta)
 	if not pending_restart.is_empty():
@@ -262,7 +279,88 @@ func _ensure_ready_kicker() -> void:
 		_pickup_locked = true
 		_pickup_position = ball.global_position
 		_pickup_last_kicker = ball.last_kicker
+		_try_resolve_counter(ready_player)
+		var retreat_limits := _retreat_on_turnover(ready_player)
+		_separate_players(retreat_limits)
 	_update_keeper_position()
+
+
+func _retreat_on_turnover(owner: Node2D) -> Dictionary:
+	if not is_instance_valid(ball.last_kicker) or ball.last_kicker.team == owner.team:
+		return {}
+	# Only break up an advanced set-piece attack, once per formation.
+	# Ordinary alternating shots must not gradually rewrite the base formation.
+	if _advanced_play.is_empty() or _advanced_play.team != ball.last_kicker.team or _advanced_play.get("retreated", false):
+		return {}
+	_advanced_play.retreated = true
+	var limits: Dictionary = {}
+	var previous_team: int = ball.last_kicker.team
+	var direction := 1.0 if previous_team == 0 else -1.0
+	var candidates: Array = []
+	for player in players:
+		if player.team == previous_team and not player.is_goalkeeper:
+			candidates.append(player)
+	# Pull the supporting attackers back first, leaving forward passing options.
+	candidates.sort_custom(func(a, b): return a.center().x * direction < b.center().x * direction)
+	var advanced: Array = candidates.filter(func(player): return (player.center().x - PITCH.get_center().x) * direction > 0.0)
+	for player in candidates:
+		if player not in advanced:
+			advanced.append(player)
+	for index in range(mini(2, advanced.size())):
+		var player: Node2D = advanced[index]
+		if _return_after_restart.get("player") == player:
+			_return_after_restart.clear()
+		var target := Vector2(PITCH.get_center().x - direction * (160.0 + index * 80.0), PITCH.position.y + PITCH.size.y * (0.32 if index == 0 else 0.68))
+		player.global_position += target - player.center()
+		player.knockback_velocity = Vector2.ZERO
+		limits[player] = Rect2(PITCH.position if previous_team == 0 else Vector2(PITCH.get_center().x + 6, PITCH.position.y), Vector2(PITCH.size.x * 0.5 - 6, PITCH.size.y))
+	return limits
+
+
+func _separate_players(limits: Dictionary = {}) -> void:
+	var anchor: Node2D = restart_taker if is_instance_valid(restart_taker) else ready_player
+	var waiting: Node2D = _return_after_restart.get("player") if not ball.is_stopped() else null
+	_player_spacing.arrange(players, PITCH, anchor, waiting, limits)
+
+
+func _remember_advanced_formation(team: int) -> void:
+	if not _advanced_play.is_empty() and _advanced_play.team == team:
+		_advanced_play.counter_started = false
+		_advanced_play.retreated = false
+		return
+	var before: Dictionary = {}
+	for player in players:
+		before[player] = player.global_position
+	_advanced_play = {"team": team, "before": before, "counter_started": false}
+
+
+func _try_resolve_counter(keeper: Node2D) -> void:
+	if _advanced_play.is_empty() or not _advanced_play.counter_started:
+		return
+	if not keeper.is_goalkeeper or keeper.team != _advanced_play.team or not keeper.can_reach(ball):
+		return
+	if not is_instance_valid(ball.last_kicker) or ball.last_kicker.team == keeper.team:
+		return
+	var attacking_team: int = _advanced_play.team
+	var before: Dictionary = _advanced_play.before
+	_advanced_play.clear()
+	_return_after_restart.clear()
+	_keeper_recoveries.erase(keeper)
+	_keeper_saves.reset()
+	# The countering side eases toward its own goal; its keeper stays guarding.
+	for player in players:
+		if player.is_goalkeeper or player.team == attacking_team:
+			continue
+		var back := -1.0 if player.team == 0 else 1.0
+		var target: Vector2 = player.center() + Vector2(back * counter_retreat_distance, 0)
+		target = target.clamp(PITCH.position + Vector2(35, 35), PITCH.end - Vector2(35, 35))
+		player.global_position += target - player.center()
+		player.knockback_velocity = Vector2.ZERO
+	for player in players:
+		if player.team == attacking_team and not player.is_goalkeeper and before.has(player):
+			player.global_position = before[player]
+			player.knockback_velocity = Vector2.ZERO
+	restart_formation = ""
 
 
 func _update_keeper_position(delta: float = 0.0) -> void:
@@ -273,13 +371,16 @@ func _update_keeper_position(delta: float = 0.0) -> void:
 		shooter = ready_player
 	for keeper in _keeper_homes:
 		keeper.reset_facing()
-		# Keep the chosen coverage during flight; do not override a kick or knockback.
-		if not ball.is_stopped() or not pending_restart.is_empty():
+		if not pending_restart.is_empty():
 			continue
 		if keeper in _keeper_recoveries or not keeper.knockback_velocity.is_zero_approx():
 			continue
 		if keeper == ready_player or keeper == restart_taker or keeper == aiming_player:
 			continue
+		if not ball.is_stopped():
+			_keeper_saves.update(self, keeper, delta)
+			continue
+		_keeper_saves.reads.erase(keeper)
 		var target: Vector2 = _keeper_homes[keeper]
 		if is_instance_valid(shooter) and shooter.team != keeper.team:
 			var offset_y: float = shooter.center().y - PITCH.get_center().y
@@ -289,11 +390,10 @@ func _update_keeper_position(delta: float = 0.0) -> void:
 				var nearest_mouth := Vector2(goal_x, clampf(shooter.center().y, GOAL_TOP, GOAL_BOTTOM))
 				var distance: float = shooter.center().distance_to(nearest_mouth)
 				var blend := clampf((keeper_cover_fade_range - distance) / maxf(1.0, keeper_cover_fade_range - keeper_close_range), 0.0, 1.0)
-				var body_shape: CircleShape2D = keeper.get_node("Body/CollisionShape2D").shape
-				var body_radius := body_shape.radius
+				var half: Vector2 = keeper.collision_half_extents()
 				var inside := 1.0 if keeper.team == 0 else -1.0
 				# Close the gap between keeper and post to less than one ball diameter.
-				var near_post := Vector2(goal_x + inside * (body_radius + ball.radius() - 3.0), GOAL_TOP + body_radius + 1.0 if offset_y < 0 else GOAL_BOTTOM - body_radius - 1.0)
+				var near_post := Vector2(goal_x + inside * (half.x + ball.radius() - 3.0), GOAL_TOP + half.y + 1.0 if offset_y < 0 else GOAL_BOTTOM - half.y - 1.0)
 				near_post -= keeper.get_node("Body").position
 				target = target.lerp(near_post, blend)
 		var next_position: Vector2 = keeper.global_position.move_toward(target, keeper_cover_speed * delta)
@@ -391,39 +491,26 @@ func find_goal_crossing(from: Vector2, to: Vector2) -> Dictionary:
 	return {}
 
 
-func _predict_goal_audio() -> void:
-	if ball.frozen or ball.play_locked or ball.is_stopped() or not pending_restart.is_empty():
+func _update_chance_audio() -> void:
+	if match_over or ball.frozen or ball.play_locked or ball.is_stopped() or not pending_restart.is_empty():
 		return
 	var speed: float = ball.velocity.length()
-	var horizon := audio_anticipation
-	if ball.friction > 0.0:
-		horizon = minf(horizon, speed / ball.friction)
-	var distance := maxf(0.0, speed * horizon - 0.5 * ball.friction * horizon * horizon)
-	if distance <= 0.0:
+	if speed < 100.0 or absf(ball.velocity.x) < 40.0:
 		return
-	var motion: Vector2 = ball.velocity.normalized() * distance
-	# Sweep the actual ball shape; a player/post before the line blocks a goal cue.
-	ball._update_collision_mask()
-	var collision: KinematicCollision2D = ball.move_and_collide(motion, true)
-	var reachable_motion: Vector2 = collision.get_travel() if collision != null else motion
-	var goal := find_goal_crossing(ball.global_position, ball.global_position + reachable_motion)
-	if not goal.is_empty():
-		match_audio.play_goal()
+	# React to a close goal attempt, including one that the keeper may save.
+	# A goal celebration is reserved for the actual full-ball crossing.
+	var goal_x: float = PITCH.end.x if ball.velocity.x > 0 else PITCH.position.x
+	var dx: float = goal_x - ball.global_position.x
+	var arrival: float = dx / ball.velocity.x
+	if arrival < 0.0 or arrival > 1.5 or absf(dx) > chance_audio_range:
 		return
-	var exit := find_exit(ball.global_position, ball.global_position + reachable_motion)
-	if not exit.is_empty():
-		if exit.side == "left" or exit.side == "right":
-			var point: Vector2 = exit.point
-			if point.y > GOAL_TOP and point.y < GOAL_BOTTOM:
-				return
-			else:
-				var defending_team := 0 if exit.side == "left" else 1
-				if is_instance_valid(ball.last_touch) and ball.last_touch.team != defending_team:
-					if minf(absf(point.y - GOAL_TOP), absf(point.y - GOAL_BOTTOM)) <= 80.0:
-						match_audio.play_miss()
+	var projected_y: float = ball.global_position.y + ball.velocity.y * arrival
+	if projected_y < GOAL_TOP - chance_audio_margin or projected_y > GOAL_BOTTOM + chance_audio_margin:
 		return
-	if collision != null and collision.get_collider().is_in_group("goal_post"):
-		match_audio.play_miss()
+	var travel: float = absf(dx) * speed / absf(ball.velocity.x)
+	if ball.friction > 0.0 and travel > speed * speed / (2.0 * ball.friction):
+		return
+	match_audio.play_miss()
 
 
 func _goalkeeper(team: int) -> Node2D:
@@ -461,6 +548,12 @@ func _finish_pending_restart() -> void:
 
 
 func _award_restart(kind: String, team: int, point: Vector2, inward: Vector2) -> void:
+	if kind == "Tendangan gawang":
+		_restore_formation()
+		restart_formation = ""
+	_keeper_saves.reset()
+	if not _restart_formations.layout_for(kind, team, point, PITCH).is_empty():
+		_remember_advanced_formation(team)
 	_blue_ai.reset()
 	_pickup_locked = false
 	_return_after_restart.clear()
@@ -476,6 +569,9 @@ func _award_restart(kind: String, team: int, point: Vector2, inward: Vector2) ->
 	restart_taker = _goalkeeper(team) if kind == "Tendangan gawang" else _nearest_player(point, team)
 	ready_player = restart_taker
 	ball.place_for_restart(point, restart_taker)
+	restart_formation = _restart_formations.apply_layout(kind, team, point, PITCH, players, restart_taker, _keeper_homes)
+	if not restart_formation.is_empty():
+		_keeper_recoveries.clear()
 	restart_taker.prepare_kick(ball)
 	_update_keeper_position()
 	# Give the stationary restart ball enough room to leave the line cleanly.
@@ -487,11 +583,15 @@ func _award_restart(kind: String, team: int, point: Vector2, inward: Vector2) ->
 			if offset.is_zero_approx():
 				offset = Vector2.DOWN
 			player.global_position += offset.normalized() * (90.0 - offset.length())
+	_separate_players()
 	$AimOverlay.queue_redraw()
 
 
 func _schedule_restart_return(player: Node2D) -> void:
 	if player.is_goalkeeper:
+		if player == restart_taker and restart_kind in ["Out", "Corner"]:
+			_return_after_restart = {"player": player, "target": _keeper_homes[player], "remaining": 0.18, "wait_for_stop": true, "keeper": true}
+			return
 		_keeper_recoveries[player] = 0.18
 		return
 	if player != restart_taker or restart_kind not in ["Out", "Corner"]:
@@ -502,7 +602,7 @@ func _schedule_restart_return(player: Node2D) -> void:
 		target_center = ball.global_position + restart_inward * Vector2(150.0, 140.0)
 	target_center = target_center.clamp(PITCH.position + Vector2(50, 50), PITCH.end - Vector2(50, 50))
 	var target: Vector2 = target_center - player.get_node("Body").position
-	_return_after_restart = {"player": player, "target": target, "remaining": 0.18}
+	_return_after_restart = {"player": player, "target": target, "remaining": 0.18, "wait_for_stop": true}
 
 
 func _on_keeper_pushed(keeper: Node2D) -> void:
@@ -511,6 +611,8 @@ func _on_keeper_pushed(keeper: Node2D) -> void:
 
 func _update_keeper_recovery(delta: float) -> void:
 	for keeper in _keeper_recoveries.keys():
+		if not _return_after_restart.is_empty() and _return_after_restart.player == keeper and _return_after_restart.get("wait_for_stop", false) and not ball.is_stopped():
+			continue
 		# A keeper taking a restart or lining up a kick stays with the ball until shooting.
 		if keeper == restart_taker or keeper == aiming_player:
 			continue
@@ -528,6 +630,7 @@ func _update_keeper_recovery(delta: float) -> void:
 		keeper.get_node("SlapTimer").stop()
 		keeper._on_slap_timer_timeout()
 		_keeper_recoveries.erase(keeper)
+		_separate_players()
 
 
 func _update_restart_return(delta: float) -> void:
@@ -536,38 +639,32 @@ func _update_restart_return(delta: float) -> void:
 	_return_after_restart.remaining -= delta
 	if _return_after_restart.remaining > 0.0:
 		return
+	if _return_after_restart.get("wait_for_stop", false) and not ball.is_stopped():
+		return
 	var player: Node2D = _return_after_restart.player
 	var target: Vector2 = _return_after_restart.target
+	var is_keeper: bool = _return_after_restart.get("keeper", false)
 	_return_after_restart.clear()
 	if not is_instance_valid(player):
 		return
 	player.knockback_velocity = Vector2.ZERO
-	player.global_position = _available_return_position(player, target)
+	_keeper_recoveries.erase(player)
+	player.global_position = target if is_keeper else _available_return_position(player, target)
+	_separate_players()
 
 
 func _available_return_position(player: Node2D, target: Vector2) -> Vector2:
-	var body: StaticBody2D = player.get_node("Body")
-	var query := PhysicsShapeQueryParameters2D.new()
-	query.shape = body.get_node("CollisionShape2D").shape
-	query.collision_mask = 14
-	query.exclude = [body.get_rid()]
-	var offsets: Array[Vector2] = [Vector2.ZERO]
-	for radius in [60.0, 100.0, 140.0]:
-		for index in range(8):
-			offsets.append(Vector2.RIGHT.rotated(index * TAU / 8.0) * radius)
-	for offset in offsets:
-		var candidate: Vector2 = target + offset
-		var center: Vector2 = candidate + body.position
-		if not PITCH.grow(-30.0).has_point(center):
-			continue
-		query.transform = Transform2D(0.0, center)
-		if get_world_2d().direct_space_state.intersect_shape(query, 1).is_empty():
-			return candidate
-	# Keep the intended return point if an unusually crowded formation blocks all options.
-	return target
+	var occupied: Array[Rect2] = []
+	for other in players:
+		if other != player:
+			occupied.append(other.placement_bounds(other.global_position).grow(PlayerSpacing.GAP * 0.5))
+	occupied.append(Rect2(ball.global_position - Vector2.ONE * ball.radius(), Vector2.ONE * ball.radius() * 2.0))
+	return _player_spacing._find_position(player, target, occupied, PITCH)
 
 
 func _restore_formation() -> void:
+	_advanced_play.clear()
+	_keeper_saves.reset()
 	_keeper_recoveries.clear()
 	for player in players:
 		player.position = _initial_positions[player]
@@ -575,9 +672,11 @@ func _restore_formation() -> void:
 		player.get_node("SlapTimer").stop()
 		player._on_slap_timer_timeout()
 		player.reset_facing()
+	_separate_players()
 
 
 func reset_match() -> void:
+	restart_formation = ""
 	_blue_ai.reset()
 	_pickup_locked = false
 	_pickup_last_kicker = null
@@ -620,6 +719,8 @@ func _update_scoreboard() -> void:
 func _finish_match() -> void:
 	if match_over:
 		return
+	_advanced_play.clear()
+	_keeper_saves.reset()
 	_blue_ai.reset()
 	_pickup_locked = false
 	get_tree().paused = false

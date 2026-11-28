@@ -9,8 +9,9 @@ size = Vector2(96, 96)
 [sub_resource type="CircleShape2D" id="CircleShape2D_slap"]
 radius = 12.0
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
-radius = 28.0
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
+resource_local_to_scene = true
+size = Vector2(94, 73)
 
 [node name="PaperPlayer" type="Area2D"]
 input_pickable = true
@@ -48,7 +49,7 @@ collision_mask = 6
 input_pickable = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Body"]
-shape = SubResource("CircleShape2D_body")
+shape = SubResource("RectangleShape2D_body")
 
 [connection signal="timeout" from="SlapTimer" to="." method="_on_slap_timer_timeout"]
 [connection signal="body_entered" from="SlapHitbox" to="." method="_on_slap_hitbox_body_entered"]

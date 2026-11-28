@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/main.tscn" id="1_match"]
+
+[node name="GeplakBall" instance=ExtResource("1_match")]
+blue_ai_enabled = false

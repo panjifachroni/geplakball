@@ -44,7 +44,7 @@ func _run() -> void:
 	# Predictive goal audio must use the same full-ball test.
 	ball.position = Vector2(1438, 560)
 	ball.velocity = Vector2(60, 0)
-	game._predict_goal_audio()
+	game._update_chance_audio()
 	check(not game.match_audio.get_node("Goal").playing, "Ball stopping on white line must not predict a goal")
 	# A tiny kick leaves the previous kicker closest, but another player must retrieve.
 	game.reset_match()
