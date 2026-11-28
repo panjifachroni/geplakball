@@ -1,14 +1,14 @@
-[gd_scene format=3 uid="uid://bw4d0hfccxxds"]
+[gd_scene format=3 uid="uid://dv148jyu06if1"]
 
 [ext_resource type="Texture2D" uid="uid://0fqsw4oydm38" path="res://aset/field.png" id="1_2m67m"]
+[ext_resource type="Script" uid="uid://yx4djfck621t" path="res://scenes/select_mode.gd" id="1_kvsyr"]
 [ext_resource type="Shader" uid="uid://bjhwjvxgslbu0" path="res://scenes/scroll.gdshader" id="2_kvsyr"]
 [ext_resource type="Texture2D" uid="uid://lqqrib3echy1" path="res://aset/rolling ball main menu.png" id="3_tekgv"]
 [ext_resource type="FontFile" uid="uid://5ixf84ibkqxs" path="res://aset/boldpixels.ttf" id="4_ak4u5"]
-[ext_resource type="Texture2D" path="res://aset/1v1 Button Normal.png" id="5_mafh4"]
-[ext_resource type="Texture2D" path="res://aset/1v1 Button HoverPressed.png" id="6_i4hvc"]
-[ext_resource type="Texture2D" path="res://aset/1vCPU Button Normal.png" id="7_704sx"]
-[ext_resource type="Texture2D" path="res://aset/1vCPU Button HoverPressed.png" id="8_kt60l"]
-[ext_resource type="Script" path="res://scripts/select_mode.gd" id="9_script"]
+[ext_resource type="Texture2D" uid="uid://kukks2n5resl" path="res://aset/1v1 Button Normal.png" id="5_mafh4"]
+[ext_resource type="Texture2D" uid="uid://y4umn487ki8b" path="res://aset/1v1 Button HoverPressed.png" id="6_i4hvc"]
+[ext_resource type="Texture2D" uid="uid://cbedom7x2w6od" path="res://aset/1vCPU Button Normal.png" id="7_704sx"]
+[ext_resource type="Texture2D" uid="uid://b5x5576eo27ev" path="res://aset/1vCPU Button HoverPressed.png" id="8_kt60l"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_8qiha"]
 texture = ExtResource("1_2m67m")
@@ -35,18 +35,14 @@ texture = ExtResource("8_kt60l")
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_0kyq7"]
 texture = ExtResource("8_kt60l")
 
-<<<<<<< HEAD
 [node name="SelectMode" type="Control" unique_id=1625305694]
-=======
-[node name="Select Mode" type="Control" unique_id=1625305694]
-script = ExtResource("9_script")
->>>>>>> 04a5a3ba0316ae5914dc8ec227f36738d777b00f
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_kvsyr")
 
 [node name="Panel" type="Panel" parent="." unique_id=465114754]
 layout_mode = 1
@@ -83,7 +79,7 @@ anchor_bottom = 1.0
 offset_left = 291.0
 offset_top = 303.0
 offset_right = -291.0
-offset_bottom = -734.0
+offset_bottom = -715.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/default_color = Color(0.011764706, 0.015686275, 0.03137255, 1)
@@ -103,7 +99,7 @@ anchor_bottom = 1.0
 offset_left = 291.0
 offset_top = 294.0
 offset_right = -291.0
-offset_bottom = -743.0
+offset_bottom = -720.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_outline_color = Color(0.011764706, 0.015686275, 0.03137255, 1)
@@ -115,7 +111,6 @@ text = "[wave amp=20.0 freq=5.0]Pilih Mode Permainan[/wave]"
 horizontal_alignment = 1
 
 [node name="Button" type="Button" parent="." unique_id=892509106]
-tooltip_text = "1 lawan 1 lokal: dua pemain bergantian memakai mouse di perangkat yang sama."
 layout_mode = 0
 offset_left = 280.0
 offset_top = 510.0
@@ -126,7 +121,6 @@ theme_override_styles/pressed = SubResource("StyleBoxTexture_14cdr")
 theme_override_styles/hover = SubResource("StyleBoxTexture_q4lci")
 
 [node name="Button2" type="Button" parent="." unique_id=988964687]
-tooltip_text = "Lawan CPU: kamu tim merah, CPU tim biru."
 layout_mode = 0
 offset_left = 930.0
 offset_top = 510.0
